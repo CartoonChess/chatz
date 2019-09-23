@@ -87,7 +87,6 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         // Load most recent messages and keep observing for new ones
         getRecentMessages(showProgress: true)
-//        __fixSender()
         
         // Allow user to pull to refresh
         configureRefreshControl()
@@ -112,26 +111,27 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         if let name = user.displayName {
             navigationItem.title = name
-        } else {
-            // If display name was never set and we're debugging, update the user table
-            #if DEBUG
-            assert(!users.profiles.isEmpty, "🛑 Users object wasn't properly initialized before calling updateViewTitle().")
-            guard let profile = users.profiles.first(where: { $0.id == user.uid }) else {
-                fatalError("❌ Can't update view title: User isn't in users collection!")
-            }
-            let name = profile.name
-            UserProfile.setProfileName(name, for: user, updateUserDocument: false) { (error) in
-                if let error = error {
-                    print("Error adding unset username: \(error).")
-                } else {
-                    print("✅ Added unset username.")
-                }
-            }
-            navigationItem.title = name
-            #else
-                return
-            #endif
         }
+//        } else {
+//            // If display name was never set and we're debugging, update the user table
+//            #if DEBUG
+//            assert(!users.profiles.isEmpty, "🛑 Users object wasn't properly initialized before calling updateViewTitle().")
+//            guard let profile = users.profiles.first(where: { $0.id == user.uid }) else {
+//                fatalError("❌ Can't update view title: User isn't in users collection!")
+//            }
+//            let name = profile.name
+//            UserProfile.setProfileName(name, for: user, updateUserDocument: false) { (error) in
+//                if let error = error {
+//                    print("Error adding unset username: \(error).")
+//                } else {
+//                    print("✅ Added unset username.")
+//                }
+//            }
+//            navigationItem.title = name
+//            #else
+//                return
+//            #endif
+//        }
     }
     
 
@@ -436,7 +436,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
             hud.show(in: view)
         }
         // Initial load should grab few of most recent (10, true)
-        addListenerFromUnknownStart(limit: 5) {
+        addListenerFromUnknownStart(limit: 20) {
             if showProgress { hud.dismiss() }
         }
     }
@@ -457,7 +457,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         
         // Oldest message from previous fetch will now be (just after) our newest message
-        let query = messagesDB.order(by: "time", descending: true).limit(to: 5).start(afterDocument: oldestMessage)
+        let query = messagesDB.order(by: "time", descending: true).limit(to: 20).start(afterDocument: oldestMessage)
         
         addListener(query: query, appendToTop: true) { completion() }
     }
@@ -602,18 +602,22 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         spinner.show(in: view)
         
         let authorizer = Auth.auth()
-        let email = authorizer.currentUser?.email ?? "(unknown)"
-        let uid = authorizer.currentUser?.uid
+        
+        guard let user = authorizer.currentUser else {
+            fatalError("❌ Tried to sign out while no one was logged in!")
+        }
         
         // Remove push notification token from user doc before logging out (need permissions)
-        Users.removeMessagingToken(for: uid) { (error) in
+        user.removeNotificationToken() { (error) in
             if let error = error {
                 print(error)
+                spinner.indicatorView = JGProgressHUDErrorIndicatorView()
+                spinner.dismiss(afterDelay: 1)
                 return
             } else {
                 do {
                     try authorizer.signOut()
-                    print("Signed out user with email \(email).")
+                    print("Signed out user \(user.displayName ?? "(name unknown)").")
                     
                     spinner.dismiss()
                     self.performSegue(withIdentifier: "logOutUnwindSegue", sender: self)
@@ -701,6 +705,26 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
 //                print("Error writing batch \(err)")
 //            } else {
 //                print("Batch write succeeded.")
+//            }
+//        }
+//    }
+//
+//    func __callCollectionGroup() {
+////        const tokenDocs = await admin.firestore().collectionGroup("notificationTokens").where("token", "==", token).get()
+//        var token = ""
+//        Permissions.getFirebaseMessagingToken { result in
+//            switch result {
+//            case .success(let fcmToken):
+//                token = fcmToken
+//            case .failure(let error):
+//                print(error)
+//            }
+//        }
+//
+//        Firestore.firestore().collectionGroup("notificationTokens").whereField("token", isEqualTo: token).getDocuments { snapshot, error in
+//            if let error = error { print("🐛🐛🐛 __callCollectionGroup error: \(error.localizedDescription)") }
+//            if let snapshot = snapshot {
+//                print("🐛🐛🐛 __callCollectionGroup found \(snapshot.count) snapshot(s).")
 //            }
 //        }
 //    }

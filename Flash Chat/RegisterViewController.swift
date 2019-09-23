@@ -48,7 +48,8 @@ class RegisterViewController: UIViewController {
                             print("❌ Couldn't update token on login because current user couldn't be found.")
                             return
                         }
-                        Users.updateMessagingToken(for: user)
+//                        Users.updateMessagingToken(for: user)
+                        user.updateNotificationTokens()
                     }
                 }
                 // On successful registration, push to chat window
@@ -72,12 +73,15 @@ class RegisterViewController: UIViewController {
             
             let user = result.user
             print("👋 User with email \(email) registered (ID \(user.uid)).")
-            UserProfile.setProfileName(name, for: user, updateUserDocument: true) { (error) in
-//                if let error = error {
-                    completion(error)
-//                    return
-//                }
-            }
+            // Add user name as displayName in Auth
+            user.setProfileName(name) { (error) in completion(error) }
+            
+//            UserProfile.setProfileName(name, for: user, updateUserDocument: true) { (error) in
+////                if let error = error {
+//                    completion(error)
+////                    return
+////                }
+//            }
         }
     }
     

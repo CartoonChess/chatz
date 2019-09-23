@@ -54,7 +54,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             print("❌ Not logged in, even though we have a messaging token.")
             return
         }
-        Users.updateMessagingToken(for: user)
+//        Users.updateMessagingToken(for: user)
+        user.updateNotificationTokens()
     }
     
     // Or, if we fail
@@ -105,6 +106,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+        
+        // Clear notifications and badge
+        application.applicationIconBadgeNumber = 0
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {

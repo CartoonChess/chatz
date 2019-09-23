@@ -41,7 +41,8 @@ class LogInViewController: UIViewController {
                         print("❌ Couldn't update token on login because current user couldn't be found.")
                         return
                     }
-                    Users.updateMessagingToken(for: user)
+//                    Users.updateMessagingToken(for: user)
+                    user.updateNotificationTokens()
                 }
             }
             

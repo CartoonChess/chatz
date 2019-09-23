@@ -19,8 +19,7 @@
 		63E28B331B9A337600FBF6E0 /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63E28B2E1B9A337600FBF6E0 /* WelcomeViewController.swift */; };
 		63EBB3051D98004B004175E5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 63EBB3041D98004B004175E5 /* LaunchScreen.storyboard */; };
 		7FAA2F168E7A89A1FBADC083 /* Pods_Flash_Chat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 42F4170B7EDE6319946B037B /* Pods_Flash_Chat.framework */; };
-		AD6D00E420EA766400B1782A /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = AD6D00E320EA766400B1782A /* README.md */; };
-		AE2F4F82232F519C003EBC4C /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2F4F81232F519C003EBC4C /* UserProfile.swift */; };
+		AE2F4F82232F519C003EBC4C /* Users.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2F4F81232F519C003EBC4C /* Users.swift */; };
 		AE9D04E2232A00A10087F03A /* Date+readable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE9D04E1232A00A10087F03A /* Date+readable.swift */; };
 		AEE096452326391F003E13D8 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AEE096442326391F003E13D8 /* GoogleService-Info.plist */; };
 		AEE7EA9723308B8E00172026 /* Permissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEE7EA9623308B8E00172026 /* Permissions.swift */; };
@@ -42,8 +41,7 @@
 		63E28B2D1B9A337600FBF6E0 /* RegisterViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegisterViewController.swift; sourceTree = "<group>"; };
 		63E28B2E1B9A337600FBF6E0 /* WelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
 		63EBB3041D98004B004175E5 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ../LaunchScreen.storyboard; sourceTree = "<group>"; };
-		AD6D00E320EA766400B1782A /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		AE2F4F81232F519C003EBC4C /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
+		AE2F4F81232F519C003EBC4C /* Users.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Users.swift; sourceTree = "<group>"; };
 		AE9D04E1232A00A10087F03A /* Date+readable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+readable.swift"; sourceTree = "<group>"; };
 		AEE096442326391F003E13D8 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AEE7EA9623308B8E00172026 /* Permissions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Permissions.swift; sourceTree = "<group>"; };
@@ -83,7 +81,6 @@
 		6321A9AD1B94EBA10053D2E7 = {
 			isa = PBXGroup;
 			children = (
-				AD6D00E320EA766400B1782A /* README.md */,
 				6321A9B81B94EBA10053D2E7 /* Flash Chat */,
 				6321A9B71B94EBA10053D2E7 /* Products */,
 				02E65F77288514AAC69107E1 /* Pods */,
@@ -156,8 +153,8 @@
 		6321A9EE1B94EC360053D2E7 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				AE2F4F81232F519C003EBC4C /* Users.swift */,
 				63E28B241B9A335300FBF6E0 /* Message.swift */,
-				AE2F4F81232F519C003EBC4C /* UserProfile.swift */,
 				AE9D04E1232A00A10087F03A /* Date+readable.swift */,
 			);
 			name = Model;
@@ -237,7 +234,6 @@
 			files = (
 				63E28B291B9A336600FBF6E0 /* Main.storyboard in Resources */,
 				6321A9C31B94EBA10053D2E7 /* Images.xcassets in Resources */,
-				AD6D00E420EA766400B1782A /* README.md in Resources */,
 				63EBB3051D98004B004175E5 /* LaunchScreen.storyboard in Resources */,
 				6321A9E51B94EBE70053D2E7 /* MessageCell.xib in Resources */,
 				AEE096452326391F003E13D8 /* GoogleService-Info.plist in Resources */,
@@ -316,7 +312,7 @@
 				6321A9E21B94EBE70053D2E7 /* CustomMessageCell.swift in Sources */,
 				63E28B321B9A337600FBF6E0 /* RegisterViewController.swift in Sources */,
 				63E28B311B9A337600FBF6E0 /* LogInViewController.swift in Sources */,
-				AE2F4F82232F519C003EBC4C /* UserProfile.swift in Sources */,
+				AE2F4F82232F519C003EBC4C /* Users.swift in Sources */,
 				63E28B2F1B9A337600FBF6E0 /* AppDelegate.swift in Sources */,
 				63E28B301B9A337600FBF6E0 /* ChatViewController.swift in Sources */,
 				AE9D04E2232A00A10087F03A /* Date+readable.swift in Sources */,
