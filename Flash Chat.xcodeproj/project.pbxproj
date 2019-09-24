@@ -21,6 +21,8 @@
 		7FAA2F168E7A89A1FBADC083 /* Pods_Flash_Chat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 42F4170B7EDE6319946B037B /* Pods_Flash_Chat.framework */; };
 		AE2F4F82232F519C003EBC4C /* Users.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2F4F81232F519C003EBC4C /* Users.swift */; };
 		AE9D04E2232A00A10087F03A /* Date+readable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE9D04E1232A00A10087F03A /* Date+readable.swift */; };
+		AEA591D02338BA8D0025AA20 /* Version.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA591CF2338BA8D0025AA20 /* Version.swift */; };
+		AEA591D2233916660025AA20 /* DimmableTableViewCellTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA591D1233916660025AA20 /* DimmableTableViewCellTextField.swift */; };
 		AEE096452326391F003E13D8 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AEE096442326391F003E13D8 /* GoogleService-Info.plist */; };
 		AEE7EA9723308B8E00172026 /* Permissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEE7EA9623308B8E00172026 /* Permissions.swift */; };
 /* End PBXBuildFile section */
@@ -43,6 +45,8 @@
 		63EBB3041D98004B004175E5 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ../LaunchScreen.storyboard; sourceTree = "<group>"; };
 		AE2F4F81232F519C003EBC4C /* Users.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Users.swift; sourceTree = "<group>"; };
 		AE9D04E1232A00A10087F03A /* Date+readable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+readable.swift"; sourceTree = "<group>"; };
+		AEA591CF2338BA8D0025AA20 /* Version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Version.swift; sourceTree = "<group>"; };
+		AEA591D1233916660025AA20 /* DimmableTableViewCellTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DimmableTableViewCellTextField.swift; sourceTree = "<group>"; };
 		AEE096442326391F003E13D8 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AEE7EA9623308B8E00172026 /* Permissions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Permissions.swift; sourceTree = "<group>"; };
 		AEE7EA982330A84000172026 /* Flash Chat.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Flash Chat.entitlements"; sourceTree = "<group>"; };
@@ -145,6 +149,7 @@
 			children = (
 				63EBB3041D98004B004175E5 /* LaunchScreen.storyboard */,
 				63E28B281B9A336600FBF6E0 /* Main.storyboard */,
+				AEA591D1233916660025AA20 /* DimmableTableViewCellTextField.swift */,
 				6321A9E91B94EBEE0053D2E7 /* Custom Cell */,
 			);
 			name = View;
@@ -155,6 +160,7 @@
 			children = (
 				AE2F4F81232F519C003EBC4C /* Users.swift */,
 				63E28B241B9A335300FBF6E0 /* Message.swift */,
+				AEA591CF2338BA8D0025AA20 /* Version.swift */,
 				AE9D04E1232A00A10087F03A /* Date+readable.swift */,
 			);
 			name = Model;
@@ -316,6 +322,8 @@
 				63E28B2F1B9A337600FBF6E0 /* AppDelegate.swift in Sources */,
 				63E28B301B9A337600FBF6E0 /* ChatViewController.swift in Sources */,
 				AE9D04E2232A00A10087F03A /* Date+readable.swift in Sources */,
+				AEA591D2233916660025AA20 /* DimmableTableViewCellTextField.swift in Sources */,
+				AEA591D02338BA8D0025AA20 /* Version.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

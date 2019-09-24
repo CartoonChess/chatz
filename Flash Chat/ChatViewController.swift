@@ -11,10 +11,13 @@ import Firebase
 import JGProgressHUD
 
 class ChatViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-    
-    // MARK: - Properties
+    // MARK: - Properties -
     
     // Messages database
+//    // To check if our app isn't so old that we can't safely connect
+//    var canConnectToMessagesDB = Version.current.meetsMinimum {
+//        didSet { updateForAppVersion() }
+//    }
     // "lazy" fixes crash from initializing before AppDelegate configures Firebase
     lazy var messagesDB = Firestore.firestore().collection("messages")
     // Local copy
@@ -47,7 +50,9 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     @IBOutlet weak var composeViewBottomConstraint: NSLayoutConstraint!
     
     
-    // MARK: - Methods
+    // MARK: - Methods -
+    
+    // MARK: Loading
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -60,6 +65,11 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         // Register MessageCell.xib file
         messageTableView.register(UINib(nibName: "MessageCell", bundle: nil), forCellReuseIdentifier: "customMessageCell")
+        
+        // TODO: Is this redunant, or is it safe?
+//        // See if we need to listen for app meeting minimum version
+//        updateForAppVersion()
+        Version.current.listen(from: self)
         
         // Watch for keyboard appearing
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -103,6 +113,70 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         super.viewDidDisappear(animated)
         timer.invalidate()
     }
+    
+//    func appVersionWasChecked(meetsMinimum: Bool) {
+//        print("🐛🐛🐛 updateForAppVersion() called")
+//        // We have already received the value
+//        if !meetsMinimum {
+//            print("🐛🐛🐛 meetsMinimum is false")
+//            // Warn user
+//            let otherHuds = JGProgressHUD.allProgressHUDs(in: view)
+//            otherHuds.forEach { $0.dismiss() }
+//            let errorHud = JGProgressHUD()
+//            errorHud.indicatorView = JGProgressHUDErrorIndicatorView()
+//            errorHud.textLabel.text = "Old Version"
+//            errorHud.detailTextLabel.text = "Please update the app."
+//            errorHud.dismiss(afterDelay: 3)
+//
+//            // Disable message textfield and button
+//            toggleComposeView(enable: false)
+//
+//            // TODO: Delete any pending messages
+//        }
+//        print("🐛🐛🐛 meetsMinimum is true")
+//    }
+    
+//    func updateForAppVersion() {
+//        print("🐛🐛🐛 updateForAppVersion() called")
+//        // First, check if app minimum version has yet to be identified
+//        guard let canUseServer = Version.current.meetsMinimum else {
+//            print("🐛🐛🐛 meetsMinimum is nil")
+//            return
+//        }
+////            // TODO: We're waiting on the value, so we'll listen for it
+////            NotificationCenter.default.addObserver(self, selector: #selector(updateForAppVersion), name: nil, object: Version.current.meetsMinimum)
+////
+////            NotificationCenter.default.addObserver(forName: <#T##NSNotification.Name?#>, object: <#T##Any?#>, queue: <#T##OperationQueue?#>, using: <#T##(Notification) -> Void#>)
+////
+////            NotificationCenter.default.addObserver(<#T##observer: NSObject##NSObject#>, forKeyPath: <#T##String#>, options: <#T##NSKeyValueObservingOptions#>, context: <#T##UnsafeMutableRawPointer?#>)
+////            return
+////        }
+//
+////        // Older versions of iOS have to deallocate the observer
+////        // I guess we would want to do this on VC's deinit as well...
+////        if #available (iOS 9, *) {} else {
+////            removeObserver(self, forKeyPath: <#T##String#>)
+////        }
+//
+//        // We have already received the value
+//        if !canUseServer {
+//            print("🐛🐛🐛 meetsMinimum is false")
+//            // Warn user
+//            let otherHuds = JGProgressHUD.allProgressHUDs(in: view)
+//            otherHuds.forEach { $0.dismiss() }
+//            let errorHud = JGProgressHUD()
+//            errorHud.indicatorView = JGProgressHUDErrorIndicatorView()
+//            errorHud.textLabel.text = "Old Version"
+//            errorHud.detailTextLabel.text = "Please update the app."
+//            errorHud.dismiss(afterDelay: 3)
+//
+//            // Disable message textfield and button
+//            toggleComposeView(enable: false)
+//
+//            // TODO: Delete any pending messages
+//        }
+//        print("🐛🐛🐛 meetsMinimum is true")
+//    }
     
     func updateViewTitle() {
         guard let user = Auth.auth().currentUser else {
@@ -242,10 +316,21 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func highlightMessages() {
-        messageTableView.backgroundColor = .orange
-        UIView.animate(withDuration: 2.0) {
-            self.messageTableView.backgroundColor = .white
-        }
+        messageTableView.backgroundColor = .systemOrange
+//        UIView.animate(withDuration: 2.0) {
+//            if #available(iOS 13, *) {
+//                self.messageTableView.backgroundColor = .systemBackground
+//            } else {
+//                self.messageTableView.backgroundColor = .white
+//            }
+//        }
+        UIView.animate(withDuration: 2.0, delay: 0, options: .allowUserInteraction, animations: {
+            if #available(iOS 13, *) {
+                self.messageTableView.backgroundColor = .systemBackground
+            } else {
+                self.messageTableView.backgroundColor = .white
+            }
+        })
     }
     
     
@@ -498,17 +583,22 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
                 spinner.dismiss(afterDelay: 0.5)
                 // Repopulate text field
                 self.messageFailedToSend(body)
-                self.toggleComposeView(enabled: true)
+                self.toggleComposeView(enable: true)
                 return
             }
             print("Saved message using ID \(documentID) (probably to server).")
         }
     }
     
-    func toggleComposeView(enabled toggle: Bool) {
-//        sendButton.isEnabled = toggle
-        textFieldChanged(messageTextfield)
-        messageTextfield.isEnabled = toggle
+    func toggleComposeView(enable: Bool) {
+        if enable {
+            // Send button will still be disabled if textfield is empty
+            textFieldChanged(messageTextfield)
+        } else {
+            sendButton.isEnabled = false
+        }
+        
+        messageTextfield.isEnabled = enable
     }
     
     func willSendMessage(_ message: String) -> String {
@@ -633,6 +723,8 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Stop receiving new messages
         removeListeners()
+        // And stop looking for app version if we haven't found it
+        Version.current.stopListening(from: self)
     }
 
 
@@ -730,4 +822,75 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
 //    }
 
 
+}
+
+
+extension ChatViewController: VersionDelegate {
+//    var listenerIndex: Int?
+    
+    func appVersionWasChecked(meetsMinimum: Bool) {
+        print("🐛🐛🐛 updateForAppVersion() called")
+        guard meetsMinimum else {
+            print("🐛🐛🐛 meetsMinimum is false")
+            // Warn user
+            let otherHuds = JGProgressHUD.allProgressHUDs(in: view)
+            otherHuds.forEach { $0.dismiss() }
+            let errorHud = JGProgressHUD()
+            errorHud.indicatorView = JGProgressHUDErrorIndicatorView()
+            errorHud.textLabel.text = "Old Version"
+            errorHud.detailTextLabel.text = "Please update the app."
+            errorHud.show(in: view)
+            errorHud.dismiss(afterDelay: 3)
+            
+            // Disable message textfield and button
+            toggleComposeView(enable: false)
+            
+            // TODO: Delete any pending messages
+            deletePendingMessages()
+            
+            return
+        }
+        print("🐛🐛🐛 meetsMinimum is true")
+    }
+    
+    func deletePendingMessages() {
+        // Don't let the server get messages composed with an out-of-date version of the app
+//        for listener in listeners {
+//            listener
+//        }
+        
+//        Firestore.firestore().clearPersistence { error in
+//            if let error = error {
+//                print(error.localizedDescription)
+//            }
+//        }
+        
+        // The basic query, without a starting bound
+        var query = self.messagesDB.order(by: "time")
+        
+        // If there's was at least one message when loading, start from there
+        if let oldestMessage = oldestMessage {
+            query = query.start(atDocument: oldestMessage)
+        }
+        
+        query.getDocuments { snapshot, error in
+            guard let snapshot = snapshot else {
+                print("Listener: Could not listen for messages: \(error?.localizedDescription ?? "(unknown error)")")
+                return
+            }
+            
+            for document in snapshot.documents {
+                if document.metadata.hasPendingWrites {
+                    document.reference.delete { error in
+                        if let error = error {
+                            print("❌ Failed to delete pending message: \(error.localizedDescription)")
+                        } else {
+                            print("🗑 Pending message deleted.")
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
 }

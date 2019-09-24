@@ -29,6 +29,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         // Initialise and Configure Firebase
         FirebaseApp.configure()
+        // This hides some of the load time behind the launch screen... maybe
+        Firestore.firestore()
+        
+        // Check that app version is new enough to connect to Firebase backend
+        // The Firebase connection will be severed, then automatically returned when check is successful
+        // Other objects can check .meetsMinimum for true/false (on completion) or nil.
+        Version.current.compareAgainstMinimum()
         
         // Set ourselves as the Notification Center delegate (must be performed at app launch)
         // This allows us to display push notifications (sent via APNs)
@@ -210,45 +217,12 @@ extension AppDelegate: MessagingDelegate {
 //    // Initialise and Configure Firebase
 //    FirebaseApp.configure()
 //
-//    //        // Database test
-//    ////        let database = Database.database().reference()
-//    ////        database.setValue("Best test!")
-//    ////        database.child("test").setValue("testinginging")
-//    ////        let database = Database.database().reference(withPath: "/test")
-//    ////        database.setValue("value!")
-//    //
-//    //        // Get the Firestore database
-//    //        let database = Firestore.firestore()
-//    //        // Get a reference to a document (table..ish)
-//    //        var reference: DocumentReference?
-//    //        // Write to the document (collection will be created if it doesn't exist)
-//    //        reference = database.collection("testcollection").addDocument(data: [
-//    //            "one": 1,
-//    //            "two": 2
-//    //        ]) { error in
-//    //            guard let documentID = reference?.documentID else {
-//    //                print("Firestore write error: \(error?.localizedDescription ?? "unknown")")
-//    //                return
-//    //            }
-//    //            print("Firestore document written: ID is \(documentID).")
-//    //        }
-//    //
-//    //        // Write without error handling
-//    //        reference = database.collection("testcollection").addDocument(data: [
-//    //            "foo": "bar",
-//    //            "leet": 1337
-//    //        ])
-//    //
-//    //        // Read
-//    //        database.collection("testcollection").getDocuments { (result, error) in
-//    //            guard let result = result else {
-//    //                print("Firestore read error: \(error?.localizedDescription ?? "unknown")")
-//    //                return
-//    //            }
-//    //            for document in result.documents {
-//    //                print("Document \(document.documentID): \(document.data())")
-//    //            }
-//    //        }
+//    // Database test
+//    let database = Database.database().reference()
+//    database.setValue("Best test!")
+//    database.child("test").setValue("testinginging")
+//    let database = Database.database().reference(withPath: "/test")
+//    database.setValue("value!")
 //
 //    return true
 //}

@@ -24,7 +24,17 @@ class CustomMessageCell: UITableViewCell {
 //    var message: Message?
     var message: MessageView?
     
-    let themeColor = UIColor(red: 46.0/255.0, green: 177.0/255.0, blue: 135.0/255.0, alpha: 1)
+//    let themeColor = UIColor(red: 46.0/255.0, green: 177.0/255.0, blue: 135.0/255.0, alpha: 1)
+    let themeColor = UIColor.systemOrange
+    var systemBackgroundColor: UIColor {
+        get {
+            if #available(iOS 13, *) {
+                return .systemBackground
+            } else {
+                return .white
+            }
+        }
+    }
     
     
     // MARK: - Methods
@@ -75,12 +85,14 @@ class CustomMessageCell: UITableViewCell {
             senderUsername.isHidden = true
 //            messageBody.textColor = themeColor
 //            messageBackground.backgroundColor = .white
+            messageBody.textColor = systemBackgroundColor
         } else {
             avatarImageView.image = image
 //            avatarImageView.backgroundColor = color
             avatarImageView.backgroundColor = message?.color
             messageBody.textColor = themeColor
-            messageBackground.backgroundColor = .white
+//            messageBackground.backgroundColor = .white
+            messageBackground.backgroundColor = systemBackgroundColor
         }
         
         // Toggle visibility
@@ -111,7 +123,8 @@ class CustomMessageCell: UITableViewCell {
     
     private func isHighlightable(_ highlightable: Bool) {
         if !highlightable {
-            backgroundColor = .white
+//            backgroundColor = .white
+            backgroundColor = systemBackgroundColor
         } else {
             backgroundColor = nil
         }
@@ -121,8 +134,10 @@ class CustomMessageCell: UITableViewCell {
         contentView.alpha = 0.5
         
         messageBody.text = "Message deleted."
-        messageBackground.backgroundColor = UIColor(white: 0.25, alpha: 1)
-        messageBody.textColor = .white
+//        messageBackground.backgroundColor = UIColor(white: 0.25, alpha: 1)
+        messageBackground.backgroundColor = UIColor.systemGray
+//        messageBody.textColor = .white
+        messageBody.textColor = systemBackgroundColor
         messageBody.textAlignment = .center
         
         selfImageView.isHidden = true
@@ -138,7 +153,8 @@ class CustomMessageCell: UITableViewCell {
         contentView.alpha = 1
         
         messageBackground.backgroundColor = themeColor
-        messageBody.textColor = .white
+//        messageBody.textColor = .white
+        messageBody.textColor = systemBackgroundColor
         
         avatarImageView.isHidden = false
         avatarImageView.image = nil
