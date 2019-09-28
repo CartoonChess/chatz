@@ -23,9 +23,37 @@
 		AE9D04E2232A00A10087F03A /* Date+readable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE9D04E1232A00A10087F03A /* Date+readable.swift */; };
 		AEA591D02338BA8D0025AA20 /* Version.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA591CF2338BA8D0025AA20 /* Version.swift */; };
 		AEA591D2233916660025AA20 /* DimmableTableViewCellTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA591D1233916660025AA20 /* DimmableTableViewCellTextField.swift */; };
+		AEA591DA233AFDCB0025AA20 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA591D9233AFDCB0025AA20 /* NotificationService.swift */; };
+		AEA591DE233AFDCB0025AA20 /* ChatzNotificationServiceExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AEA591D7233AFDCA0025AA20 /* ChatzNotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AEA591E5233B30580025AA20 /* PropertyKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA591E4233B30580025AA20 /* PropertyKeys.swift */; };
+		AEA591E6233B30580025AA20 /* PropertyKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA591E4233B30580025AA20 /* PropertyKeys.swift */; };
 		AEE096452326391F003E13D8 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AEE096442326391F003E13D8 /* GoogleService-Info.plist */; };
 		AEE7EA9723308B8E00172026 /* Permissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEE7EA9623308B8E00172026 /* Permissions.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AEA591DC233AFDCB0025AA20 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6321A9AE1B94EBA10053D2E7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AEA591D6233AFDCA0025AA20;
+			remoteInfo = ChatzNotificationServiceExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		AEA591E2233AFDCC0025AA20 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				AEA591DE233AFDCB0025AA20 /* ChatzNotificationServiceExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		40EB431F298ADB5554E0BBC7 /* Pods-Flash Chat.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Flash Chat.debug.xcconfig"; path = "Target Support Files/Pods-Flash Chat/Pods-Flash Chat.debug.xcconfig"; sourceTree = "<group>"; };
@@ -47,6 +75,11 @@
 		AE9D04E1232A00A10087F03A /* Date+readable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+readable.swift"; sourceTree = "<group>"; };
 		AEA591CF2338BA8D0025AA20 /* Version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Version.swift; sourceTree = "<group>"; };
 		AEA591D1233916660025AA20 /* DimmableTableViewCellTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DimmableTableViewCellTextField.swift; sourceTree = "<group>"; };
+		AEA591D7233AFDCA0025AA20 /* ChatzNotificationServiceExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ChatzNotificationServiceExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AEA591D9233AFDCB0025AA20 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		AEA591DB233AFDCB0025AA20 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AEA591E3233B00050025AA20 /* ChatzNotificationServiceExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChatzNotificationServiceExtension.entitlements; sourceTree = "<group>"; };
+		AEA591E4233B30580025AA20 /* PropertyKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyKeys.swift; sourceTree = "<group>"; };
 		AEE096442326391F003E13D8 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AEE7EA9623308B8E00172026 /* Permissions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Permissions.swift; sourceTree = "<group>"; };
 		AEE7EA982330A84000172026 /* Flash Chat.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Flash Chat.entitlements"; sourceTree = "<group>"; };
@@ -59,6 +92,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				7FAA2F168E7A89A1FBADC083 /* Pods_Flash_Chat.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AEA591D4233AFDCA0025AA20 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,6 +126,7 @@
 			isa = PBXGroup;
 			children = (
 				6321A9B81B94EBA10053D2E7 /* Flash Chat */,
+				AEA591D8233AFDCB0025AA20 /* ChatzNotificationServiceExtension */,
 				6321A9B71B94EBA10053D2E7 /* Products */,
 				02E65F77288514AAC69107E1 /* Pods */,
 				3C1F22BC898BE73D432E34E1 /* Frameworks */,
@@ -96,6 +137,7 @@
 			isa = PBXGroup;
 			children = (
 				6321A9B61B94EBA10053D2E7 /* chatz.app */,
+				AEA591D7233AFDCA0025AA20 /* ChatzNotificationServiceExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -162,8 +204,19 @@
 				63E28B241B9A335300FBF6E0 /* Message.swift */,
 				AEA591CF2338BA8D0025AA20 /* Version.swift */,
 				AE9D04E1232A00A10087F03A /* Date+readable.swift */,
+				AEA591E4233B30580025AA20 /* PropertyKeys.swift */,
 			);
 			name = Model;
+			sourceTree = "<group>";
+		};
+		AEA591D8233AFDCB0025AA20 /* ChatzNotificationServiceExtension */ = {
+			isa = PBXGroup;
+			children = (
+				AEA591E3233B00050025AA20 /* ChatzNotificationServiceExtension.entitlements */,
+				AEA591D9233AFDCB0025AA20 /* NotificationService.swift */,
+				AEA591DB233AFDCB0025AA20 /* Info.plist */,
+			);
+			path = ChatzNotificationServiceExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -178,15 +231,34 @@
 				6321A9B31B94EBA10053D2E7 /* Frameworks */,
 				6321A9B41B94EBA10053D2E7 /* Resources */,
 				042BD97BBF1D49F9EF3B5D53 /* [CP] Embed Pods Frameworks */,
+				AEA591E2233AFDCC0025AA20 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				AEA591DD233AFDCB0025AA20 /* PBXTargetDependency */,
 			);
 			name = chatz;
 			productName = "Flash Chat";
 			productReference = 6321A9B61B94EBA10053D2E7 /* chatz.app */;
 			productType = "com.apple.product-type.application";
+		};
+		AEA591D6233AFDCA0025AA20 /* ChatzNotificationServiceExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AEA591DF233AFDCC0025AA20 /* Build configuration list for PBXNativeTarget "ChatzNotificationServiceExtension" */;
+			buildPhases = (
+				AEA591D3233AFDCA0025AA20 /* Sources */,
+				AEA591D4233AFDCA0025AA20 /* Frameworks */,
+				AEA591D5233AFDCA0025AA20 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ChatzNotificationServiceExtension;
+			productName = ChatzNotificationServiceExtension;
+			productReference = AEA591D7233AFDCA0025AA20 /* ChatzNotificationServiceExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -195,7 +267,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftMigration = 0700;
-				LastSwiftUpdateCheck = 0700;
+				LastSwiftUpdateCheck = 1100;
 				LastUpgradeCheck = 1020;
 				ORGANIZATIONNAME = "London App Brewery";
 				TargetAttributes = {
@@ -213,6 +285,11 @@
 							};
 						};
 					};
+					AEA591D6233AFDCA0025AA20 = {
+						CreatedOnToolsVersion = 11.0;
+						DevelopmentTeam = V7WZHBVH5B;
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = 6321A9B11B94EBA10053D2E7 /* Build configuration list for PBXProject "Flash Chat" */;
@@ -229,6 +306,7 @@
 			projectRoot = "";
 			targets = (
 				6321A9B51B94EBA10053D2E7 /* chatz */,
+				AEA591D6233AFDCA0025AA20 /* ChatzNotificationServiceExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -243,6 +321,13 @@
 				63EBB3051D98004B004175E5 /* LaunchScreen.storyboard in Resources */,
 				6321A9E51B94EBE70053D2E7 /* MessageCell.xib in Resources */,
 				AEE096452326391F003E13D8 /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AEA591D5233AFDCA0025AA20 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -314,6 +399,7 @@
 			files = (
 				AEE7EA9723308B8E00172026 /* Permissions.swift in Sources */,
 				63E28B331B9A337600FBF6E0 /* WelcomeViewController.swift in Sources */,
+				AEA591E5233B30580025AA20 /* PropertyKeys.swift in Sources */,
 				63E28B251B9A335300FBF6E0 /* Message.swift in Sources */,
 				6321A9E21B94EBE70053D2E7 /* CustomMessageCell.swift in Sources */,
 				63E28B321B9A337600FBF6E0 /* RegisterViewController.swift in Sources */,
@@ -327,7 +413,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AEA591D3233AFDCA0025AA20 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AEA591E6233B30580025AA20 /* PropertyKeys.swift in Sources */,
+				AEA591DA233AFDCB0025AA20 /* NotificationService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AEA591DD233AFDCB0025AA20 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AEA591D6233AFDCA0025AA20 /* ChatzNotificationServiceExtension */;
+			targetProxy = AEA591DC233AFDCB0025AA20 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		6321A9D31B94EBA10053D2E7 /* Debug */ = {
@@ -440,9 +543,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 40EB431F298ADB5554E0BBC7 /* Pods-Flash Chat.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "Flash Chat/Flash Chat.entitlements";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = V7WZHBVH5B;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -455,6 +560,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -462,9 +568,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = F92145BAF1A069C04656897E /* Pods-Flash Chat.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "Flash Chat/Flash Chat.entitlements";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = V7WZHBVH5B;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -477,6 +585,63 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		AEA591E0233AFDCC0025AA20 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = ChatzNotificationServiceExtension/ChatzNotificationServiceExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = V7WZHBVH5B;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = ChatzNotificationServiceExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.distantlabs.flashchat.ChatzNotificationServiceExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AEA591E1233AFDCC0025AA20 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = ChatzNotificationServiceExtension/ChatzNotificationServiceExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = V7WZHBVH5B;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = ChatzNotificationServiceExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 1.0.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.distantlabs.flashchat.ChatzNotificationServiceExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -497,6 +662,15 @@
 			buildConfigurations = (
 				6321A9D61B94EBA10053D2E7 /* Debug */,
 				6321A9D71B94EBA10053D2E7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AEA591DF233AFDCC0025AA20 /* Build configuration list for PBXNativeTarget "ChatzNotificationServiceExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AEA591E0233AFDCC0025AA20 /* Debug */,
+				AEA591E1233AFDCC0025AA20 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

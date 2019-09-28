@@ -29,18 +29,37 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     var colorForUser = [String: UIColor]()
     var oldestMessage: QueryDocumentSnapshot?
     var listeners = [ListenerRegistration]()
+    // Avoid downloading too many messages at once
+    let messagesToFetch = 20
+//    var newMessagesBeforeUpdates = 0
+    
+//    // To avoid a race condition between viewDidLoad and version check message fetch
+//    var viewDidLoadListenerAdded = false
+//    var appVersionWasCheckedListenerAdded = false
     
     // For refreshing timestamps
     var timer = Timer()
     
     // For checking if table should animate while scrolling to bottom
-    // Receiving messages rapidly + animation = scrolling doesn't trigger
-    private var elapsedTime_: TimeInterval = Date().timeIntervalSinceReferenceDate
-    var elapsedTime: TimeInterval {
-        let previous = elapsedTime_
-        elapsedTime_ = Date().timeIntervalSinceReferenceDate
-        return Date().timeIntervalSinceReferenceDate - previous
+//    // Receiving messages rapidly + animation = scrolling doesn't trigger
+//    private var elapsedTime_: TimeInterval = Date().timeIntervalSinceReferenceDate
+//    var elapsedTime: TimeInterval {
+//        let previous = elapsedTime_
+//        elapsedTime_ = Date().timeIntervalSinceReferenceDate
+//        return Date().timeIntervalSinceReferenceDate - previous
+//    }
+    // The updated version:
+    // See if user has initiated/completed an upward scroll
+    var userDidScrollUp = false
+    // Index path of bottom row, or nil if no rows
+    var indexPathForBottomRow: IndexPath? {
+        let row = messageTableView.numberOfRows(inSection: 0) - 1
+        guard row >= 0 else { return nil }
+        return IndexPath(row: row, section: 0)
     }
+    
+    // Keep track of how much the keyboard moved up, so we can scroll the table back down when keyboard disappears
+    var messageTableViewOffset: CGFloat = 0
     
     @IBOutlet var messageTableView: UITableView!
     @IBOutlet var messageTextfield: UITextField!
@@ -48,6 +67,10 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     @IBOutlet var heightConstraint: NSLayoutConstraint!
     @IBOutlet weak var composeView: UIView!
     @IBOutlet weak var composeViewBottomConstraint: NSLayoutConstraint!
+    @IBOutlet weak var messageTableViewBottomConstraint: NSLayoutConstraint!
+    @IBOutlet weak var backgroundView: UIView!
+    @IBOutlet weak var tableStackView: UIStackView!
+    @IBOutlet weak var tableStackViewBottomConstraint: NSLayoutConstraint!
     
     
     // MARK: - Methods -
@@ -66,9 +89,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         // Register MessageCell.xib file
         messageTableView.register(UINib(nibName: "MessageCell", bundle: nil), forCellReuseIdentifier: "customMessageCell")
         
-        // TODO: Is this redunant, or is it safe?
-//        // See if we need to listen for app meeting minimum version
-//        updateForAppVersion()
+        // See if we need to listen for app meeting minimum version
         Version.current.listen(from: self)
         
         // Watch for keyboard appearing
@@ -94,7 +115,6 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
             self.updateViewTitle()
         }
         
-        
         // Load most recent messages and keep observing for new ones
         getRecentMessages(showProgress: true)
         
@@ -113,70 +133,6 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         super.viewDidDisappear(animated)
         timer.invalidate()
     }
-    
-//    func appVersionWasChecked(meetsMinimum: Bool) {
-//        print("🐛🐛🐛 updateForAppVersion() called")
-//        // We have already received the value
-//        if !meetsMinimum {
-//            print("🐛🐛🐛 meetsMinimum is false")
-//            // Warn user
-//            let otherHuds = JGProgressHUD.allProgressHUDs(in: view)
-//            otherHuds.forEach { $0.dismiss() }
-//            let errorHud = JGProgressHUD()
-//            errorHud.indicatorView = JGProgressHUDErrorIndicatorView()
-//            errorHud.textLabel.text = "Old Version"
-//            errorHud.detailTextLabel.text = "Please update the app."
-//            errorHud.dismiss(afterDelay: 3)
-//
-//            // Disable message textfield and button
-//            toggleComposeView(enable: false)
-//
-//            // TODO: Delete any pending messages
-//        }
-//        print("🐛🐛🐛 meetsMinimum is true")
-//    }
-    
-//    func updateForAppVersion() {
-//        print("🐛🐛🐛 updateForAppVersion() called")
-//        // First, check if app minimum version has yet to be identified
-//        guard let canUseServer = Version.current.meetsMinimum else {
-//            print("🐛🐛🐛 meetsMinimum is nil")
-//            return
-//        }
-////            // TODO: We're waiting on the value, so we'll listen for it
-////            NotificationCenter.default.addObserver(self, selector: #selector(updateForAppVersion), name: nil, object: Version.current.meetsMinimum)
-////
-////            NotificationCenter.default.addObserver(forName: <#T##NSNotification.Name?#>, object: <#T##Any?#>, queue: <#T##OperationQueue?#>, using: <#T##(Notification) -> Void#>)
-////
-////            NotificationCenter.default.addObserver(<#T##observer: NSObject##NSObject#>, forKeyPath: <#T##String#>, options: <#T##NSKeyValueObservingOptions#>, context: <#T##UnsafeMutableRawPointer?#>)
-////            return
-////        }
-//
-////        // Older versions of iOS have to deallocate the observer
-////        // I guess we would want to do this on VC's deinit as well...
-////        if #available (iOS 9, *) {} else {
-////            removeObserver(self, forKeyPath: <#T##String#>)
-////        }
-//
-//        // We have already received the value
-//        if !canUseServer {
-//            print("🐛🐛🐛 meetsMinimum is false")
-//            // Warn user
-//            let otherHuds = JGProgressHUD.allProgressHUDs(in: view)
-//            otherHuds.forEach { $0.dismiss() }
-//            let errorHud = JGProgressHUD()
-//            errorHud.indicatorView = JGProgressHUDErrorIndicatorView()
-//            errorHud.textLabel.text = "Old Version"
-//            errorHud.detailTextLabel.text = "Please update the app."
-//            errorHud.dismiss(afterDelay: 3)
-//
-//            // Disable message textfield and button
-//            toggleComposeView(enable: false)
-//
-//            // TODO: Delete any pending messages
-//        }
-//        print("🐛🐛🐛 meetsMinimum is true")
-//    }
     
     func updateViewTitle() {
         guard let user = Auth.auth().currentUser else {
@@ -255,32 +211,85 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         return false
     }
     
+    
+    // MARK: - Scrolling
+    
+    // Disable scrolling to new messages when user has initiated a scroll
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        userDidScrollUp = true
+    }
+    
+    // This needs to be triggered in case the user dragged without a "flick"
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        userDidScroll()
+    }
+    
+    // Check if last row is showing when user-initiated scroll finishes
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        userDidScroll()
+    }
+    
+    func userDidScroll() {
+        guard let bottomRow = indexPathForBottomRow,
+            let visibleRows = messageTableView.indexPathsForVisibleRows else {
+                print("⚠️ User scroll ended, but table is empty.")
+                userDidScrollUp = false
+                return
+        }
+        
+        userDidScrollUp = !visibleRows.contains(bottomRow)
+    }
+    
     func scrollToBottom() {
-        let secondLastIndex = messageTableView.numberOfRows(inSection: 0) - 2
-        guard let visibleRows = messageTableView.indexPathsForVisibleRows,
-            secondLastIndex >= 0 else {
-            print("⚠️ Fewer than two rows visible.")
+        guard let bottom = indexPathForBottomRow else {
+            print("🛑 scrollToBottom called, but table is empty.")
             return
         }
         
-        let secondFromBottom: IndexPath = [0, secondLastIndex]
-        let bottom: IndexPath = [0, secondLastIndex + 1]
-        
-        if visibleRows.contains(secondFromBottom) {
+        // The key here is that, if messages come too fast, the bottom row isn't always visible
+        // Therefore we need to know if this is due to new messages, or due to user scrolling up
+        if !userDidScrollUp {
             // Scroll to show latest message if we're freshly loading,
-            //- or if we're receiving something new while already nearly at the bottom.
-            // But kill the animation if we're moving really fast, or it will break
-            messageTableView.scrollToRow(at: bottom, at: .bottom, animated: elapsedTime > 0.1)
-        } else if messages.last?.sender != Auth.auth().currentUser?.email {
+            //- or if we're receiving something new while at the bottom.
+            messageTableView.scrollToRow(at: bottom, at: .bottom, animated: true)
+        } else if messages.last?.sender != Auth.auth().currentUser?.uid {
             // Don't scroll if the user has started to go back up
             // Instead, alert them about the new message (unless we were the ones who sent it)
             let hud = JGProgressHUD()
             hud.indicatorView = JGProgressHUDSuccessIndicatorView()
             hud.textLabel.text = "New\nMessage"
-            hud.show(in: view)
+//            hud.show(in: view)
+            showHUD(hud)
             hud.dismiss(afterDelay: 0.5)
         }
     }
+    
+//    func scrollToBottom() {
+//        let secondLastIndex = messageTableView.numberOfRows(inSection: 0) - 2
+//        guard let visibleRows = messageTableView.indexPathsForVisibleRows,
+//            secondLastIndex >= 0 else {
+//            print("⚠️ Fewer than two rows visible.")
+//            return
+//        }
+//
+//        let secondFromBottom: IndexPath = [0, secondLastIndex]
+//        let bottom: IndexPath = [0, secondLastIndex + 1]
+//
+//        if visibleRows.contains(secondFromBottom) {
+//            // Scroll to show latest message if we're freshly loading,
+//            //- or if we're receiving something new while already nearly at the bottom.
+//            // But kill the animation if we're moving really fast, or it will break
+//            messageTableView.scrollToRow(at: bottom, at: .bottom, animated: elapsedTime > 0.1)
+//        } else if messages.last?.sender != Auth.auth().currentUser?.uid {
+//            // Don't scroll if the user has started to go back up
+//            // Instead, alert them about the new message (unless we were the ones who sent it)
+//            let hud = JGProgressHUD()
+//            hud.indicatorView = JGProgressHUDSuccessIndicatorView()
+//            hud.textLabel.text = "New\nMessage"
+//            hud.show(in: view)
+//            hud.dismiss(afterDelay: 0.5)
+//        }
+//    }
     
     
     // MARK: - Show old messages
@@ -317,13 +326,6 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func highlightMessages() {
         messageTableView.backgroundColor = .systemOrange
-//        UIView.animate(withDuration: 2.0) {
-//            if #available(iOS 13, *) {
-//                self.messageTableView.backgroundColor = .systemBackground
-//            } else {
-//                self.messageTableView.backgroundColor = .white
-//            }
-//        }
         UIView.animate(withDuration: 2.0, delay: 0, options: .allowUserInteraction, animations: {
             if #available(iOS 13, *) {
                 self.messageTableView.backgroundColor = .systemBackground
@@ -346,6 +348,9 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     // This is used only for the initial (recents+new) load
     func addListenerFromUnknownStart(limit: Int = Int.max, descending: Bool = true, appendToTop: Bool = false, completion: (() -> Void)? = nil) {
         // Query for getRecentMessages
+        // We must include current time to get the limit-number of messages PLUS any unsent messages
+        // This prevents the query from paginating on an unsent message (null time), which will cause a crash
+//        let query = messagesDB.order(by: "time", descending: descending).start(at: [Date()]).limit(to: limit)
         let query = messagesDB.order(by: "time", descending: descending).limit(to: limit)
         
         query.getDocuments { (snapshot, error) in
@@ -354,7 +359,12 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
                 completion?()
                 return
             }
-            
+            print("🐛🐛🐛 snapshot count: \(snapshot.count)")
+            for doc in snapshot.documents {
+                let data = doc.data()
+                let time = data["time"]
+                print("----- time: \(time)")
+            }
             // We actually only called this getDocuments to find out the start point
             // The listener for new messages will grab the most recent ones
             
@@ -364,8 +374,9 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
 //            let existingMessages = snapshot.documents.map { $0.exists }
             
             // If there's at least one message, start from the oldest (while respecting limit var)
+            // This should also be ignored if every message is a pending message
             if let oldestMessage = snapshot.documents.last {
-//                oldestMessage.exists {
+                print("🐛🐛🐛 oldestMessage: \(oldestMessage)")
                 query = query.start(atDocument: oldestMessage)
                 self.oldestMessage = oldestMessage
             }
@@ -384,11 +395,37 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
                 completion?()
                 return
             }
-            
-            // If we're getting the backlog and there's at least one message, save the oldest for reference
+            print("🐛🐛🐛 listener snapshot count: \(snapshot.count)")
             if appendToTop,
                 let oldestMessage = snapshot.documents.last {
+                // If we're getting the backlog and there's at least one message, save the oldest for reference
                 self.oldestMessage = oldestMessage
+            } else {
+                // If we're getting new messages, make sure there aren't too many
+                let newMessages = snapshot.documentChanges.filter({ $0.type == .added }).count
+                // If there are too many, we need to restart the message fetching process altogether
+                if newMessages > self.messagesToFetch {
+                    // If we have too many messages, we probably entered a new chat, came in offline, or received a ton
+                    // Clear everything and start all over again, using only the latest messages
+                    // We'll want to handle this more gracefully in the future
+                    print("⚠️ We received a ton of messages! Refreshing the view.")
+                    self.removeListeners()
+                    print("🐛🐛🐛 Remove listeners called; this is the next line.")
+                    self.messages.removeAll()
+                    self.messageTableView.reloadData()
+                    print("🐛🐛🐛 About to call getRecentMessages; listeners count: \(self.listeners.count)")
+                    // Clear the spinner before we start the next operation
+                    completion?()
+                    self.getRecentMessages(showProgress: true)
+                    print("🐛🐛🐛 getRecentMessages called; this is the next line.")
+                    // Don't continue with display operations below
+                    return
+                }
+//                let messagesAddedSinceViewAppeared = snapshot.documentChanges.filter({ $0.type == .added }).count
+//                let newMessages = messagesAddedSinceViewAppeared - self.newMessagesBeforeUpdates
+//                self.newMessagesBeforeUpdates = messagesAddedSinceViewAppeared
+//                print("🆕 newMessages: \(newMessages)")
+//                print("🆕 messagesAddedSinceViewAppeared: \(messagesAddedSinceViewAppeared)")
             }
             // Keep track of how many messages are retrieved from the backlog
             var oldMessages = [IndexPath]()
@@ -423,6 +460,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
                         // Update table view
                         let row: [IndexPath] = [[0, self.messages.count - 1]]
                         self.messageTableView.insertRows(at: row, with: .none)
+//                        self.messageTableView.insertRows(at: row, with: .right)
                         self.scrollToBottom()
                     } else {
                         // Old messages appear at the top of the view
@@ -518,17 +556,32 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     func getRecentMessages(showProgress: Bool = false) {
         let hud = JGProgressHUD()
         if showProgress {
+            // Show a notice when refresh due to too many new messages
+            if self.oldestMessage != nil {
+//                hud.indicatorView = JGProgressHUDSuccessIndicatorView()
+                hud.textLabel.text = "So Many\nNew Messages!"
+//                hud.show(in: view)
+//                hud.dismiss(afterDelay: 1)
+            }
             hud.show(in: view)
         }
         // Initial load should grab few of most recent (10, true)
-        addListenerFromUnknownStart(limit: 20) {
+        addListenerFromUnknownStart(limit: messagesToFetch) {
             if showProgress { hud.dismiss() }
+            // If we didn't find any messages, we may have joined an existing chat before passing the version check
+            //- If we suddenly connect, we'll be flooded without the limit
+            //- Kill the listener, and instruct the version delegate func to restart once online
+//            if self.messages.isEmpty {
+////                Version.current.meetsMinimum {
+//                self.removeListeners()
+//            }
         }
     }
     
     func getOlderMessages(completion: @escaping () -> Void) {
         guard !messages.isEmpty else {
             // There aren't any messages, so start from the beginning
+            print("⚠️ No messages showing, so look for those first.")
             removeListeners()
             getRecentMessages()
             completion()
@@ -542,13 +595,33 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         
         // Oldest message from previous fetch will now be (just after) our newest message
-        let query = messagesDB.order(by: "time", descending: true).limit(to: 20).start(afterDocument: oldestMessage)
+        let query = messagesDB.order(by: "time", descending: true).limit(to: messagesToFetch).start(afterDocument: oldestMessage)
         
         addListener(query: query, appendToTop: true) { completion() }
     }
     
+//    enum FirstListeners {
+//        case viewDidLoad, appVersionWasChecked
+//    }
+//
+//    func allFirstListenersDidFinish(including listener: FirstListeners) -> Bool {
+//        switch listener {
+//        case .viewDidLoad:
+//            viewDidLoadListenerAdded = true
+//        case .appVersionWasChecked:
+//            appVersionWasCheckedListenerAdded = true
+//        }
+//
+//        if viewDidLoadListenerAdded && appVersionWasCheckedListenerAdded {
+//            return true
+//        } else {
+//            return false
+//        }
+//    }
+    
     
     func removeListeners() {
+        print("💀 Killing message listeners.")
         // Kill each listener
         listeners.forEach { $0.remove() }
         // Remove dead listeners from array
@@ -651,10 +724,27 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     // MARK: - Keyboard hiding
     
     func keyboardWillUpdate(height: CGFloat) {
-        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: [], animations: {
-            self.composeViewBottomConstraint.constant = height
+//        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: [], animations: {
+//            self.composeViewBottomConstraint.constant = height
+//        tableStackViewBottomConstraint.constant = height
+//            self.offsetTableWithKeyboard(by: height)
+        messageTableViewOffset = height
+        if height == 0 {
+            view.frame.origin.y = height
+//            tableStackView.frame.origin.y = height
+//            messageTableView.frame.origin.y = height
+//            messageTableViewBottomConstraint.constant = 0
+//            tableStackViewBottomConstraint.constant = height
+        } else {
+            view.frame.origin.y -= height
+//            tableStackView.frame.origin.y -= height
+//            messageTableView.frame.origin.y -= height
+//            messageTableViewBottomConstraint.constant = 0
+//            tableStackViewBottomConstraint.constant -= height
+        }
+        
             self.view.layoutIfNeeded()
-        }, completion: nil)
+//        }, completion: nil)
     }
     
     @objc func keyboardWillShow(notification: NSNotification) {
@@ -663,21 +753,77 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
             fatalError("Couldn't get keyboard height.")
         }
         var keyboardHeight = keyboardFrame.cgRectValue.height
-        
         // iPhone X fix
         if #available(iOS 11.0, *) {
             keyboardHeight -= view.safeAreaInsets.bottom
         }
         
-        keyboardWillUpdate(height: keyboardHeight)
+        // Prevent this from happening twice in a row
+        if view.frame.origin.y == 0 {
+            keyboardWillUpdate(height: keyboardHeight)
+        }
     }
     
     @objc func keyboardWillHide(notification: NSNotification) {
-        keyboardWillUpdate(height: 0)
+        if view.frame.origin.y != 0 {
+            keyboardWillUpdate(height: 0)
+        }
     }
     
     @objc func tableViewTapped() {
         messageTextfield.resignFirstResponder()
+    }
+    
+//    func offsetTableWithKeyboard(by offset: CGFloat) {
+//        // This will push the rows up with the keyboard as well
+//        messageTableView.contentOffset.y += offset - messageTableViewOffset
+//        // This is so it scrolls back down when hiding the keyboard
+//        messageTableViewOffset = offset
+//    }
+    
+//    func offsetTableWithKeyboard(by offset: CGFloat) {
+////        print("📐 offset (before keyboard): \(messageTableView.contentOffset.y)")
+//        // This will push the rows up with the keyboard as well
+////        messageTableView.contentOffset.y += offset - messageTableViewOffset
+//        let visibleCells = messageTableView.visibleCells.count
+//        print("📐 visibleCells: \(visibleCells)")
+//        // This is so it scrolls back down when hiding the keyboard
+//        messageTableViewOffset = offset
+////        print("📐 offset (after keyboard): \(messageTableView.contentOffset.y)")
+//
+////        if offset > 0 {
+////            messageTableView.contentOffset.y += offset
+//////            messageTableView.contentInset.bottom = offset
+////            messageTableViewOffset = offset
+////        } else {
+////            messageTableView.contentOffset.y -= messageTableViewOffset
+////        }
+//
+////        if offset == 0 {
+////            print("📐 offset (zero): \(offset)")
+////            messageTableView.contentInset = .zero
+////        } else {
+////            print("📐 offset (non-zero): \(offset)")
+////            messageTableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: offset, right: 0)
+////        }
+////
+////        messageTableView.scrollIndicatorInsets = messageTableView.contentInset
+//    }
+    
+    /// Show the HUD, and adjust it if the view is moved up by the keyboard.
+    func showHUD(_ hud: JGProgressHUD) {
+        // If the view is pushed up by the keyboard, guess at the new center
+        if messageTableViewOffset != 0 {
+            let offsetViewVisibleHeight = view.frame.height - messageTableViewOffset
+            hud.position = .bottomCenter
+//            let hudHeight = hud.hudView.frame.height
+            // No good way to calculate this it seems
+            let hudHeight: CGFloat = 124.0
+            let offset = (offsetViewVisibleHeight - hudHeight) / 2
+            hud.layoutMargins.bottom = offset
+        }
+        
+        hud.show(in: view)
     }
     
 
@@ -729,7 +875,16 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
 
 
 
-
+//    func __getTableSize() {
+//        let table = messageTableView!
+//        let size = table.contentSize
+//        let inset = table.contentInset
+//        let offset = table.contentOffset
+//        print("🐛🐛🐛 size: \(size)")
+//        print("🐛🐛🐛 inset: \(inset)")
+//        print("🐛🐛🐛 offset: \(offset)")
+//    }
+//
 //    func __fixSender() {
 //        messagesDB.getDocuments { (snapshot, error) in
 //            guard let snapshot = snapshot else {
@@ -826,12 +981,16 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
 
 
 extension ChatViewController: VersionDelegate {
-//    var listenerIndex: Int?
     
     func appVersionWasChecked(meetsMinimum: Bool) {
-        print("🐛🐛🐛 updateForAppVersion() called")
-        guard meetsMinimum else {
-            print("🐛🐛🐛 meetsMinimum is false")
+        if meetsMinimum {
+            // If we don't have any message listeners yet, start the listening process
+            print("🐛🐛🐛 meetsMinimum is true")
+//            if listeners.isEmpty {
+//                // FIXME: This is in a race condition with the main load, since listeners are created asyncd
+//                getRecentMessages()
+//            }
+        } else {
             // Warn user
             let otherHuds = JGProgressHUD.allProgressHUDs(in: view)
             otherHuds.forEach { $0.dismiss() }
@@ -845,12 +1004,9 @@ extension ChatViewController: VersionDelegate {
             // Disable message textfield and button
             toggleComposeView(enable: false)
             
-            // TODO: Delete any pending messages
+            // Delete any pending messages
             deletePendingMessages()
-            
-            return
         }
-        print("🐛🐛🐛 meetsMinimum is true")
     }
     
     func deletePendingMessages() {

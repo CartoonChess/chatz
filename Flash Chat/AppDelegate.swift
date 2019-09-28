@@ -70,6 +70,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print("❌ Unable to register for remote notifications: \(error.localizedDescription)")
     }
     
+    // NOTE: Actually these don't appear to be triggered ever
     // User entered the app by tapping a push notification; this executes once the app loads (see also below)
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
         // Let Firebase know about the message for analytics (since swizzling is disabled)
@@ -116,6 +117,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         // Clear notifications and badge
         application.applicationIconBadgeNumber = 0
+        UserDefaults(suiteName: AppKeys.appGroup)?.set(0, forKey: SettingsKeys.badges)
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
@@ -151,6 +153,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
     }
     
     // Handles response options to push notifications, such as dismiss, open, etc.
+    // Includes when the user taps a notification?
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         print("🐛 userNotificationCenter(...didReceive...)")
         let userInfo = response.notification.request.content.userInfo
