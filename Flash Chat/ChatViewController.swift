@@ -19,7 +19,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
 //        didSet { updateForAppVersion() }
 //    }
     // "lazy" fixes crash from initializing before AppDelegate configures Firebase
-    lazy var messagesDB = Firestore.firestore().collection("messages")
+    lazy var messagesDB = Firestore.firestore().collection("messages_4")
     // Local copy
     var messages = [Message]()
     var messagesToHighlight = [String]()
@@ -350,8 +350,8 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         // Query for getRecentMessages
         // We must include current time to get the limit-number of messages PLUS any unsent messages
         // This prevents the query from paginating on an unsent message (null time), which will cause a crash
-//        let query = messagesDB.order(by: "time", descending: descending).start(at: [Date()]).limit(to: limit)
-        let query = messagesDB.order(by: "time", descending: descending).limit(to: limit)
+        let query = messagesDB.order(by: "time", descending: descending).start(at: [Date()]).limit(to: limit)
+//        let query = messagesDB.order(by: "time", descending: descending).limit(to: limit)
         
         query.getDocuments { (snapshot, error) in
             guard let snapshot = snapshot else {
@@ -359,12 +359,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
                 completion?()
                 return
             }
-            print("🐛🐛🐛 snapshot count: \(snapshot.count)")
-            for doc in snapshot.documents {
-                let data = doc.data()
-                let time = data["time"]
-                print("----- time: \(time)")
-            }
+            
             // We actually only called this getDocuments to find out the start point
             // The listener for new messages will grab the most recent ones
             
@@ -376,7 +371,6 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
             // If there's at least one message, start from the oldest (while respecting limit var)
             // This should also be ignored if every message is a pending message
             if let oldestMessage = snapshot.documents.last {
-                print("🐛🐛🐛 oldestMessage: \(oldestMessage)")
                 query = query.start(atDocument: oldestMessage)
                 self.oldestMessage = oldestMessage
             }
@@ -728,7 +722,8 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
 //            self.composeViewBottomConstraint.constant = height
 //        tableStackViewBottomConstraint.constant = height
 //            self.offsetTableWithKeyboard(by: height)
-        messageTableViewOffset = height
+       
+        // Push the view up or down to match the keyboard
         if height == 0 {
             view.frame.origin.y = height
 //            tableStackView.frame.origin.y = height
@@ -743,7 +738,12 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
 //            tableStackViewBottomConstraint.constant -= height
         }
         
-            self.view.layoutIfNeeded()
+        // Make sure the table doesn't scroll up when there are few messages
+        messageTableView.contentInset.top = height
+        // Pass keyboard height to view for anything (like hud) that needs to account for change
+        messageTableViewOffset = height
+        
+        self.view.layoutIfNeeded()
 //        }, completion: nil)
     }
     
