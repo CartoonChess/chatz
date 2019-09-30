@@ -33,6 +33,7 @@ class LogInViewController: UIViewController {
             }
             
             print("Logged in with email \(email) (ID \(result.user.uid)).")
+            result.user.joinGroupChat()
             
             // Update notifications token if this device is already registered
             Permissions.didAsk(for: .notification) { (didAsk) in
@@ -41,7 +42,6 @@ class LogInViewController: UIViewController {
                         print("❌ Couldn't update token on login because current user couldn't be found.")
                         return
                     }
-//                    Users.updateMessagingToken(for: user)
                     user.updateNotificationTokens()
                 }
             }

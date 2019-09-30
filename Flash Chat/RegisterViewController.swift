@@ -53,8 +53,6 @@ class RegisterViewController: UIViewController {
                     }
                 }
                 
-                // TODO: Add user to group chat participants list
-                
                 // On successful registration, push to chat window
                 spinner.dismiss()
                 self.performSegue(withIdentifier: "goToContacts", sender: self)
@@ -75,6 +73,7 @@ class RegisterViewController: UIViewController {
             print("👋 User with email \(email) registered (ID \(user.uid)).")
             // Add user name as displayName in Auth
             user.setProfileName(name) { (error) in completion(error) }
+            user.joinGroupChat()
         }
     }
     

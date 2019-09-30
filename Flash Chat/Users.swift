@@ -531,6 +531,31 @@ extension User {
         }
     }
     
+    /// Add user to the global group chat
+    func joinGroupChat() {
+        let uid = self.uid
+        let participantsDB = Firestore.firestore().collection("rooms").document("groupchat").collection("participants")
+        // Check if we're already in there
+        participantsDB.whereField("uid", isEqualTo: uid).getDocuments { snapshot, error in
+            guard let snapshot = snapshot else {
+                print("❌ Group chat participants collection unavailable: \(error?.localizedDescription ?? "(unknown error)")")
+                return
+            }
+            if snapshot.count == 0 {
+                // We're not here yet, so add ourselves
+                print("ℹ️ Adding ourselves to the group chat.")
+                participantsDB.addDocument(data: ["uid": uid]) { error in
+                    if let error = error {
+                        print("❌ Could not create participant document: \(error.localizedDescription)")
+                    }
+                }
+            } else {
+                
+                print("✅ We're already in the group chat.")
+            }
+        }
+    }
+    
     // MARK: Notification token methods
     
     /// Call this when logging in or registering to add push notification token to user doc
