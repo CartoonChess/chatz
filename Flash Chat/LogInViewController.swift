@@ -47,7 +47,7 @@ class LogInViewController: UIViewController {
             }
             
             spinner.dismiss()
-            self.performSegue(withIdentifier: "goToChat", sender: self)
+            self.performSegue(withIdentifier: "goToContacts", sender: self)
         }
     }
     

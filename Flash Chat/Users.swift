@@ -9,6 +9,10 @@
 import Foundation
 import Firebase
 
+protocol UsersListener {
+    func usersDidUpdate()
+}
+
 /// All users we've seen, so we can cache this data
 class Users {
     var profiles: [UserProfile]

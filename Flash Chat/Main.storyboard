@@ -68,7 +68,6 @@
                     </view>
                     <navigationItem key="navigationItem" title="chatz" id="qIL-hP-GCy"/>
                     <connections>
-                        <segue destination="vXZ-lx-hvc" kind="show" identifier="goToChat" id="RuE-fI-2yI"/>
                         <segue destination="TfX-1w-ewL" kind="show" identifier="ContactsListSegue" id="qcY-jv-KIj"/>
                     </connections>
                 </viewController>
@@ -84,13 +83,16 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="RoomListCell" id="0GR-SP-7FH">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="RoomListCell" id="0GR-SP-7FH" customClass="RoomListCell" customModule="chatz" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="28" width="375" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="0GR-SP-7FH" id="ecq-gf-ipM">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableViewCellContentView>
+                                <connections>
+                                    <segue destination="vXZ-lx-hvc" kind="show" identifier="RoomSegue" id="XwC-zl-CiE"/>
+                                </connections>
                             </tableViewCell>
                         </prototypes>
                         <sections/>
@@ -100,21 +102,76 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="chatz" id="vLP-8i-eWg">
-                        <barButtonItem key="leftBarButtonItem" id="RsJ-D6-Qp5">
-                            <switch key="customView" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" id="HQJ-Q7-hQs">
-                                <rect key="frame" x="16" y="6.5" width="51" height="31"/>
+                        <leftBarButtonItems>
+                            <barButtonItem id="mJq-mz-SEd">
+                                <view key="customView" contentMode="scaleToFill" id="Dap-cm-PXc">
+                                    <rect key="frame" x="16" y="5.5" width="33" height="33"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="🔠" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wes-dw-Ynw">
+                                            <rect key="frame" x="10" y="0.0" width="23" height="33"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="wes-dw-Ynw" firstAttribute="top" secondItem="Dap-cm-PXc" secondAttribute="top" id="9Cc-a1-bVW"/>
+                                        <constraint firstAttribute="bottom" secondItem="wes-dw-Ynw" secondAttribute="bottom" id="Eb5-XL-nMz"/>
+                                        <constraint firstAttribute="trailing" secondItem="wes-dw-Ynw" secondAttribute="trailing" id="ZDA-gy-Kmh"/>
+                                    </constraints>
+                                </view>
+                            </barButtonItem>
+                            <barButtonItem id="QJS-Vz-kiX">
+                                <switch key="customView" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" id="yoy-tz-cL7">
+                                    <rect key="frame" x="57" y="6.5" width="51" height="31"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <color key="onTintColor" systemColor="systemOrangeColor" red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <connections>
+                                        <action selector="toggleRoomSort:" destination="TfX-1w-ewL" eventType="primaryActionTriggered" id="GI4-ia-Pd0"/>
+                                    </connections>
+                                </switch>
+                            </barButtonItem>
+                            <barButtonItem id="Asp-N8-njd">
+                                <view key="customView" contentMode="scaleToFill" id="cyJ-ss-dGh">
+                                    <rect key="frame" x="116" y="5.5" width="33" height="33"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="🆕" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Je9-np-2pK">
+                                            <rect key="frame" x="0.0" y="0.0" width="23" height="33"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="Je9-np-2pK" firstAttribute="leading" secondItem="cyJ-ss-dGh" secondAttribute="leading" id="HWg-E4-QMG"/>
+                                        <constraint firstItem="Je9-np-2pK" firstAttribute="top" secondItem="cyJ-ss-dGh" secondAttribute="top" id="Wjs-FS-I3E"/>
+                                        <constraint firstAttribute="bottom" secondItem="Je9-np-2pK" secondAttribute="bottom" id="qzK-1z-tth"/>
+                                    </constraints>
+                                </view>
+                            </barButtonItem>
+                        </leftBarButtonItems>
+                        <barButtonItem key="rightBarButtonItem" id="ZqL-1G-Jsj">
+                            <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="oK3-2s-Dpa">
+                                <rect key="frame" x="276" y="7" width="83" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="onTintColor" systemColor="systemOrangeColor" red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="Log Out"/>
                                 <connections>
-                                    <action selector="toggleRoomSort:" destination="TfX-1w-ewL" eventType="primaryActionTriggered" id="4Vb-Hj-J3x"/>
+                                    <action selector="logOutButtonTouched:" destination="TfX-1w-ewL" eventType="touchUpInside" id="9wh-Bx-wMP"/>
                                 </connections>
-                            </switch>
+                            </button>
                         </barButtonItem>
                     </navigationItem>
+                    <connections>
+                        <outlet property="roomSortSwitch" destination="yoy-tz-cL7" id="haa-Le-fpt"/>
+                        <segue destination="ZUa-A7-ylH" kind="unwind" identifier="logOutUnwindSegue" unwindAction="unwindToWelcome:" id="ToP-Wm-kly"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="vuK-66-DhW" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <exit id="ZUa-A7-ylH" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
-            <point key="canvasLocation" x="341" y="675"/>
+            <point key="canvasLocation" x="1761" y="7"/>
         </scene>
         <!--Register-->
         <scene sceneID="D59-Lz-QjT">
@@ -182,12 +239,12 @@
                         <outlet property="emailTextfield" destination="M1R-HS-xgc" id="EZN-co-Khq"/>
                         <outlet property="nameTextField" destination="SEN-Dy-KKb" id="zYQ-XO-6fV"/>
                         <outlet property="passwordTextfield" destination="SYb-Xx-USU" id="pWb-Ds-G8q"/>
-                        <segue destination="vXZ-lx-hvc" kind="show" identifier="goToChat" id="mOy-cb-hAN"/>
+                        <segue destination="TfX-1w-ewL" kind="show" identifier="goToContacts" id="TaC-Lg-jGr"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="zMZ-W7-skD" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1054" y="283"/>
+            <point key="canvasLocation" x="1065" y="-359"/>
         </scene>
         <!--Log In-->
         <scene sceneID="Ku8-Lc-W7f">
@@ -263,12 +320,12 @@
                     <connections>
                         <outlet property="emailTextfield" destination="ZWF-xv-G1L" id="A9I-P9-2rL"/>
                         <outlet property="passwordTextfield" destination="zuQ-XP-4Q7" id="FBf-fZ-iYp"/>
-                        <segue destination="vXZ-lx-hvc" kind="show" identifier="goToChat" id="rRW-Qd-PQi"/>
+                        <segue destination="TfX-1w-ewL" kind="show" identifier="goToContacts" id="WaC-TY-qGE"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ewD-vV-GoZ" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1054" y="-387"/>
+            <point key="canvasLocation" x="1065" y="362"/>
         </scene>
         <!--Messages-->
         <scene sceneID="ufC-wZ-h7g">
@@ -339,26 +396,18 @@
                             <constraint firstItem="2fi-mo-0CV" firstAttribute="top" secondItem="cGa-gv-Ksh" secondAttribute="bottom" id="jfe-ha-wMO"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Messages" id="OGj-fw-WBv">
-                        <barButtonItem key="rightBarButtonItem" title="Log Out" id="mz9-8w-6zi">
-                            <connections>
-                                <action selector="logOutPressed:" destination="vXZ-lx-hvc" id="AiZ-zI-Rgo"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" title="Messages" id="OGj-fw-WBv"/>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
                         <outlet property="backgroundView" destination="kh9-bI-dsS" id="pWh-LQ-7HM"/>
                         <outlet property="messageTableView" destination="7eI-kw-TVm" id="OYq-98-NhQ"/>
                         <outlet property="messageTextfield" destination="W4K-YF-skl" id="rE7-AO-1UD"/>
                         <outlet property="sendButton" destination="JiI-fB-I1v" id="Oxz-hw-PLC"/>
-                        <segue destination="HFj-1j-uyc" kind="unwind" identifier="logOutUnwindSegue" unwindAction="unwindToWelcome:" id="oO8-ow-wZz"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
-                <exit id="HFj-1j-uyc" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
-            <point key="canvasLocation" x="1786" y="7"/>
+            <point key="canvasLocation" x="2444" y="7"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="kGX-IT-aXC">
@@ -385,6 +434,6 @@
         <image name="Image" width="596" height="842"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="mOy-cb-hAN"/>
+        <segue reference="WaC-TY-qGE"/>
     </inferredMetricsTieBreakers>
 </document>

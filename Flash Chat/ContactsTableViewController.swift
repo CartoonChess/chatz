@@ -8,10 +8,11 @@
 
 import UIKit
 import Firebase
+import JGProgressHUD
 
-class ContactsTableViewController: UITableViewController, VersionDelegate {
+class ContactsTableViewController: UITableViewController {
     
-    // MARK: - Properties
+    // MARK: - Properties -
     
     // Users (for names and colouring)
     var users = Users()
@@ -25,12 +26,17 @@ class ContactsTableViewController: UITableViewController, VersionDelegate {
     // Listeners for individual previews
     var previewListeners: [DocumentReference: ListenerRegistration] = [:]
     
+    // MARK: - IBOutlets
+    
+    @IBOutlet weak var roomSortSwitch: UISwitch!
+    
     
     // MARK: - Methods
     
+    // MARK: - Init
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         // Register MessageCell.xib file
         tableView.register(UINib(nibName: "RoomListCell", bundle: nil), forCellReuseIdentifier: "RoomListCell")
         
@@ -41,21 +47,15 @@ class ContactsTableViewController: UITableViewController, VersionDelegate {
         users.fetch() {
             // Change title to user name
             self.updateViewTitle()
-            // Update view when a new user is added
-            self.tableView.reloadData()
             // Add rows for users without rooms
-            self.updateUsers()
+            self.updateUserCells()
+            // Update table
+            self.sortRooms()
+            // TODO: Show name changes
         }
         
         // Get rooms
         updateRooms()
-    }
-    
-    
-    // MARK: - Init
-    
-    func appVersionWasChecked(meetsMinimum: Bool) {
-        // TODO: Do something
     }
     
     func updateViewTitle() {
@@ -180,7 +180,6 @@ class ContactsTableViewController: UITableViewController, VersionDelegate {
                                 // A new chat has appeared, or we're doing init load
                                 self.rooms.append(room)
                                 // Add to table
-                                // TODO: Order by name or unread date
                                 let row: [IndexPath] = [[0, self.rooms.count - 1]]
                                 self.tableView.insertRows(at: row, with: .automatic)
                             }
@@ -194,6 +193,9 @@ class ContactsTableViewController: UITableViewController, VersionDelegate {
                             @unknown default:
                                 fatalError("🛑 Room's message document changed in an unexpected way!")
                             }
+                            
+                            self.updateUserCells()
+                            self.sortRooms()
                         }
                         
                     }
@@ -203,40 +205,41 @@ class ContactsTableViewController: UITableViewController, VersionDelegate {
         }
     }
     
-    /// Create rows for users with whom we have not yet started a room
-    func updateUsers() {
-        // Remove ourselves from the user list
-        var usersWithoutRooms = users.profiles.filter { $0.id != Auth.auth().currentUser?.uid }
-        // Then remove users with whom we've already got rooms
-        let usersWithRooms = rooms.compactMap { $0.otherUserID }
-        usersWithoutRooms = usersWithoutRooms.filter { !usersWithRooms.contains($0.id) }
-        
-        // Create room preview cells for those users
-//        var userPreviews: [RoomPreview] = []
-        for user in usersWithoutRooms {
-            let color = users.views.first { $0.user.id == user.id }?.color ?? UIColor.systemOrange
-            let preview = RoomPreview(id: user.id,
-                                      otherUserID: user.id,
-                                      name: user.name,
-                                      latestMessage: nil,
-                                      latestMessageTime: nil,
-                                      icon: UIImage(named: "egg")!,
-                                      color: color,
-                                      unreadCount: nil)
-//            userPreviews.append(preview)
-            // Update array
-            let index = rooms.count
-            rooms.append(preview)
-            
-            // Update the view
-            // FIXME: Can this crash if it happens async with updateRooms()?
-            tableView.insertRows(at: [[0, index]], with: .automatic)
+    func updateUserCells() {
+        for user in users.profiles.filter({ $0.id != Auth.auth().currentUser?.uid }) {
+            if !rooms.contains(where: { $0.otherUserID == user.id }) {
+                // User is invisible:
+                // Create empty cell with username
+                showInvisibleUser(user)
+            } else if let emptyRoomIndex = rooms.firstIndex(where: { $0.id == user.id }),
+                rooms.contains(where: { $0.otherUserID == user.id && $0.id != user.id }) {
+                // User already had a visible empty room cell, but a real room with them was created
+                // Remove the empty room cell
+                removeInvisibleUser(at: emptyRoomIndex)
+            }
         }
-        
-//        // Add these empty chats to the list of real ones
-//        rooms += userPreviews
-        
-        
+    }
+    
+    /// List users with whom we have no associated room
+    func showInvisibleUser(_ user: UserProfile) {
+        let color = users.views.first { $0.user.id == user.id }?.color ?? UIColor.systemOrange
+        let preview = RoomPreview(id: user.id,
+                                  otherUserID: user.id,
+                                  name: user.name,
+                                  latestMessage: nil,
+                                  latestMessageTime: nil,
+                                  icon: UIImage(named: "egg")!,
+                                  color: color,
+                                  unreadCount: nil)
+        let index = rooms.count
+        rooms.append(preview)
+        tableView.insertRows(at: [[0, index]], with: .automatic)
+    }
+    
+    /// Get rid of empty room cell when a user gets an active chat
+    func removeInvisibleUser(at index: Int) {
+        rooms.remove(at: index)
+        tableView.deleteRows(at: [[0, index]], with: .automatic)
     }
     
 
@@ -258,6 +261,12 @@ class ContactsTableViewController: UITableViewController, VersionDelegate {
         cell.preview = rooms[indexPath.row]
 
         return cell
+    }
+    
+    // Apparently we need to do this manually because we're using a nib
+    // Note that the segue still exists in the IB
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        performSegue(withIdentifier: "RoomSegue", sender: nil)
     }
 
     /*
@@ -281,10 +290,15 @@ class ContactsTableViewController: UITableViewController, VersionDelegate {
     */
     
     
+    // MARK: - Room sorting
     
     /// Switch between sorting alphabetically and sorting with unread messages at the top
     @IBAction func toggleRoomSort(_ sender: UISwitch) {
-        if sender.isOn {
+        sortRooms()
+    }
+    
+    func sortRooms() {
+        if roomSortSwitch.isOn {
             sortRoomsByReadStatus()
         } else {
             sortRoomsAlphabetically()
@@ -293,18 +307,27 @@ class ContactsTableViewController: UITableViewController, VersionDelegate {
     }
     
     func sortRoomsByReadStatus() {
-        // TODO: Sorted by: Unread:bool->date[->alpha(reuse other func)]
         let noTime = Date.distantPast
         
         // Rearrange array
+        
         // Unread
         var unread = rooms.filter { $0.unreadCount != nil }
         unread.sort { $0.latestMessageTime ?? noTime > $1.latestMessageTime ?? noTime }
+        
+        // Read or empty
+        let remainder = rooms.filter { $0.unreadCount == nil }
+        
         // Read
-        var read = rooms.filter { $0.unreadCount == nil }
+        var read = remainder.filter { $0.latestMessage != nil }
         read.sort { $0.latestMessageTime ?? noTime > $1.latestMessageTime ?? noTime }
+        
+        // Empty (alphabetical)
+        var empty = remainder.filter { $0.latestMessage == nil }
+        empty.sort { $0.name.lowercased() < $1.name.lowercased() }
+        
         // Combine
-        rooms = unread + read
+        rooms = unread + read + empty
         
         // Update table
         tableView.reloadData()
@@ -312,7 +335,6 @@ class ContactsTableViewController: UITableViewController, VersionDelegate {
     
     func sortRoomsAlphabetically() {
         // Rearrange array
-        // TODO: A == a
         rooms.sort { $0.name.lowercased() < $1.name.lowercased() }
         
         // Update table
@@ -324,18 +346,78 @@ class ContactsTableViewController: UITableViewController, VersionDelegate {
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+        print("🔜 Preparing to segue.")
         
-        // TODO: Pass Users object to chat view
+        guard let destination = segue.destination as? ChatViewController,
+            let cell = tableView.indexPathForSelectedRow else {
+            print("❌ Trying to segue to the wrong controller or without a selected row!")
+            return
+        }
+        
+        // TODO: Logout segue
+        // Stop looking for app version if we haven't found it
+        Version.current.stopListening(from: self)
+        
+        // Get room info
+        let room = rooms[cell.row]
+        
+        // Pass info to room view
+        destination.users = users
+        destination.roomName = room.name
+        
+        if room.id != room.otherUserID {
+            // This chat already exists
+            destination.roomID = room.id
+        } else {
+            // This is a new chat, without a document ID
+            destination.roomID = Firestore.firestore().collection("rooms").document().documentID
+            destination.otherUserID = room.otherUserID
+        }
     }
     
     
     // MARK: - Deinit
     
+    @IBAction func logOutButtonTouched(_ sender: Any) {
+        logOut()
+    }
+    
     func logOut() {
-        // TODO: Loutout logic
+        // Kill room listeners
         removeListeners()
+        // Kill user listener
+        users.removeListener()
+        
+        let spinner = JGProgressHUD()
+        spinner.show(in: view)
+        
+        let authorizer = Auth.auth()
+        
+        guard let user = authorizer.currentUser else {
+            fatalError("❌ Tried to sign out while no one was logged in!")
+        }
+        
+        // Remove push notification token from user doc before logging out (need permissions)
+        user.removeNotificationToken() { error in
+            if let error = error {
+                print(error)
+                spinner.indicatorView = JGProgressHUDErrorIndicatorView()
+                spinner.dismiss(afterDelay: 1)
+                return
+            } else {
+                do {
+                    try authorizer.signOut()
+                    print("Signed out user \(user.displayName ?? "(name unknown)").")
+                    
+                    spinner.dismiss()
+                    self.performSegue(withIdentifier: "logOutUnwindSegue", sender: self)
+                } catch {
+                    print("Could not log out: \(error.localizedDescription)")
+                    spinner.indicatorView = JGProgressHUDErrorIndicatorView()
+                    spinner.dismiss(afterDelay: 1)
+                }
+            }
+        }
     }
     
     func removeListeners() {
@@ -344,4 +426,21 @@ class ContactsTableViewController: UITableViewController, VersionDelegate {
         previewListeners.forEach { $0.1.remove() }
     }
 
+}
+
+
+extension ContactsTableViewController: VersionDelegate {
+    func appVersionWasChecked(meetsMinimum: Bool) {
+        if !meetsMinimum {
+            // Warn user
+            let otherHuds = JGProgressHUD.allProgressHUDs(in: view)
+            otherHuds.forEach { $0.dismiss() }
+            let errorHud = JGProgressHUD()
+            errorHud.indicatorView = JGProgressHUDErrorIndicatorView()
+            errorHud.textLabel.text = "Old Version"
+            errorHud.detailTextLabel.text = "Please update the app."
+            errorHud.show(in: view)
+            errorHud.dismiss(afterDelay: 3)
+        }
+    }
 }

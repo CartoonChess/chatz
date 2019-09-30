@@ -13,29 +13,29 @@ import JGProgressHUD
 class ChatViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     // MARK: - Properties -
     
-    // Messages database
-//    // To check if our app isn't so old that we can't safely connect
-//    var canConnectToMessagesDB = Version.current.meetsMinimum {
-//        didSet { updateForAppVersion() }
-//    }
-    // "lazy" fixes crash from initializing before AppDelegate configures Firebase
-    lazy var messagesDB = Firestore.firestore().collection("messages_4")
+    // Room collection (room ID and messages collection will be added on later)
+//    // "lazy" fixes crash from initializing before AppDelegate configures Firebase
+//    lazy var messagesDB = Firestore.firestore().collection("messages_4")
+    lazy var messagesDB = Firestore.firestore().collection("rooms")
+//    var messagesDB: CollectionReference?
     // Local copy
     var messages = [Message]()
     var messagesToHighlight = [String]()
     // Users (for names and colouring)
     var users = Users()
+    // In case we are creating a new chat with someone
+    var otherUserID: String?
     
-    var colorForUser = [String: UIColor]()
+    // Info from the rooms list
+    var roomName: String = ""
+    var roomID: String = ""
+    
+//    var colorForUser = [String: UIColor]()
     var oldestMessage: QueryDocumentSnapshot?
     var listeners = [ListenerRegistration]()
     // Avoid downloading too many messages at once
     let messagesToFetch = 20
 //    var newMessagesBeforeUpdates = 0
-    
-//    // To avoid a race condition between viewDidLoad and version check message fetch
-//    var viewDidLoadListenerAdded = false
-//    var appVersionWasCheckedListenerAdded = false
     
     // For refreshing timestamps
     var timer = Timer()
@@ -80,7 +80,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     override func viewDidLoad() {
         super.viewDidLoad()
         // Hide the back button
-        navigationItem.hidesBackButton = true
+//        navigationItem.hidesBackButton = false
         
         // TableView setup
         messageTableView.delegate = self
@@ -115,13 +115,33 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
 //            self.updateViewTitle()
 //        }
         
-        // TODO: Update view with chat/user name
+        // Update title with chat/user name
+        navigationItem.title = roomName
+        
+//        // Determine messages collection path
+//        if let roomID = roomID {
+//            // The chat already exists
+//            messagesDB = Firestore.firestore().collection("rooms").document(roomID).collection("messages")
+//
+//            // Load most recent messages and keep observing for new ones
+//            getRecentMessages(showProgress: true)
+//
+//            // Allow user to pull to refresh
+//            configureRefreshControl()
+//        } else {
+//            // This is a new, empty chat
+//            messagesDB = createRoom().collection("messages")
+//        }
+        
+        // Determine messages collection path
+        messagesDB = messagesDB.document(roomID).collection("messages")
         
         // Load most recent messages and keep observing for new ones
         getRecentMessages(showProgress: true)
         
         // Allow user to pull to refresh
         configureRefreshControl()
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -342,16 +362,23 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     //MARK: - Firebase
     
-    // Pagination adopted from: https://medium.com/@650egor/firestore-reactive-pagination-db3afb0bf42e
+//    /// Create a new room in the database
+//    func createRoom() -> DocumentReference {
+//        // Rooms parent path
+//        let roomsDB = Firestore.firestore().collection("rooms")
+//
+//        // Create new room document with dummy data to get doc ID
+//        return roomsDB.document()
+//    }
     
-    // TODO: Maybe we don't need the getMessage() method. We can just grab up to the limit the same way as the typical listener, set the last message as oldestMessage, and use the one method to always place the messages at messages[0]; then we can load the view all at once
-    //- We still want new (.: also recent) messages to .append() at the bottom instead
+    // Pagination adopted from: https://medium.com/@650egor/firestore-reactive-pagination-db3afb0bf42e
     
     // This is used only for the initial (recents+new) load
     func addListenerFromUnknownStart(limit: Int = Int.max, descending: Bool = true, appendToTop: Bool = false, completion: (() -> Void)? = nil) {
         // Query for getRecentMessages
         // We must include current time to get the limit-number of messages PLUS any unsent messages
         // This prevents the query from paginating on an unsent message (null time), which will cause a crash
+//        guard let messagesDB = messagesDB else { fatalError("❌ Can't get messagesDB.") }
         let query = messagesDB.order(by: "time", descending: descending).start(at: [Date()]).limit(to: limit)
 //        let query = messagesDB.order(by: "time", descending: descending).limit(to: limit)
         
@@ -589,6 +616,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         
         // Oldest message from previous fetch will now be (just after) our newest message
+//        guard let messagesDB = messagesDB else { fatalError("❌ Can't get messagesDB.") }
         let query = messagesDB.order(by: "time", descending: true).limit(to: messagesToFetch).start(afterDocument: oldestMessage)
         
         addListener(query: query, appendToTop: true) { completion() }
@@ -639,11 +667,15 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         let time = FieldValue.serverTimestamp()
         let message = Message.makeDocument(time: time, sender: sender, body: body)
         
-        // Add new message to database
-        var document: DocumentReference?
-        document = messagesDB.addDocument(data: message) { (error) in
-            guard let documentID = document?.documentID else {
-                print("Failed to send message: \(error?.localizedDescription ?? "unknown error")")
+        var otherUserIDs = [String]()
+        if let otherUserID = otherUserID { otherUserIDs.append(otherUserID) }
+        
+        sendMessage(message, adding: otherUserIDs) { result in
+            switch result {
+            case .success(let document):
+                print("Saved message using ID \(document.documentID).")
+            case .failure(let error):
+                print("❌ Failed to send message: \(error.localizedDescription)")
                 let spinner = JGProgressHUD()
                 spinner.indicatorView = JGProgressHUDErrorIndicatorView()
                 spinner.show(in: self.view)
@@ -651,9 +683,106 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
                 // Repopulate text field
                 self.messageFailedToSend(body)
                 self.toggleComposeView(enable: true)
+            }
+        }
+        
+//        // Add new message to database
+//        var document: DocumentReference?
+////        guard let messagesDB = messagesDB else { fatalError("❌ Can't get messagesDB.") }
+//        document = messagesDB.addDocument(data: message) { (error) in
+//            guard let documentID = document?.documentID else {
+//                print("Failed to send message: \(error?.localizedDescription ?? "unknown error")")
+//                let spinner = JGProgressHUD()
+//                spinner.indicatorView = JGProgressHUDErrorIndicatorView()
+//                spinner.show(in: self.view)
+//                spinner.dismiss(afterDelay: 0.5)
+//                // Repopulate text field
+//                self.messageFailedToSend(body)
+//                self.toggleComposeView(enable: true)
+//                return
+//            }
+//            print("Saved message using ID \(documentID) (probably to server).")
+//        }
+    }
+    
+    /// Add new message to database
+    func sendMessage(_ message: [String: Any], adding participants: [String]? = nil, completion: @escaping (Result<DocumentReference, Error>) -> Void) {
+//        var document: DocumentReference?
+//        guard let messagesDB = messagesDB else { fatalError("❌ Can't get messagesDB.") }
+        if let participants = participants,
+            !participants.isEmpty {
+            addParticipants(participants) { result in
+                switch result {
+                case .success(let confirmation):
+                    print(confirmation)
+                    self.createMessageDocument(from: message) { result in
+                        switch result {
+                        case .success(let doc):
+                            completion(.success(doc))
+                        case .failure(let error):
+                            completion(.failure(error))
+                        }
+                    }
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+        } else {
+            createMessageDocument(from: message) { result in
+                switch result {
+                case .success(let doc):
+                    completion(.success(doc))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+    
+    /// If this is the very first message, we must set up the participants list
+    func addParticipants(_ userIDs: [String], completion: @escaping (Result<String, Error>) -> Void) {
+        guard let roomDoc = messagesDB.parent,
+            let currentUserID = Auth.auth().currentUser?.uid else {
+            print("❌ Could not access participants collection, or the current user's ID has a problem.")
+            return
+        }
+        let participantsDB = roomDoc.collection("participants")
+        
+        // Get new write batch
+        let batch = Firestore.firestore().batch()
+        
+        // Create any field in room doc, so it "exists"
+        batch.setData(["created": FieldValue.serverTimestamp()], forDocument: roomDoc)
+        
+        var userIDs = userIDs
+        userIDs.append(currentUserID)
+
+        for uid in userIDs {
+            batch.setData(["uid": uid], forDocument: participantsDB.document())
+        }
+
+        // Commit the batch
+        batch.commit() { error in
+            if let error = error {
+//                print("❌ Error creating participant documents: \(error.localizedDescription)")
+                completion(.failure(error))
+            } else {
+                // Once we succeed, make this nil, so we won't try to make it again
+                self.otherUserID = nil
+                completion(.success("✅ Participant documents created."))
+            }
+        }
+    }
+    
+    func createMessageDocument(from message: [String: Any], completion: @escaping (Result<DocumentReference, Error>) -> Void) {
+        var document: DocumentReference?
+        document = messagesDB.addDocument(data: message) { error in
+            guard let document = document else {
+                let error = error ?? NSError(domain: "", code: 0, userInfo: nil)
+                completion(.failure(error))
                 return
             }
-            print("Saved message using ID \(documentID) (probably to server).")
+            completion(.success(document))
         }
     }
     
@@ -831,40 +960,40 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // MARK: - Segue-related
     
-    @IBAction func logOutPressed(_ sender: AnyObject) {
-        users.removeListener()
-        
-        let spinner = JGProgressHUD()
-        spinner.show(in: view)
-        
-        let authorizer = Auth.auth()
-        
-        guard let user = authorizer.currentUser else {
-            fatalError("❌ Tried to sign out while no one was logged in!")
-        }
-        
-        // Remove push notification token from user doc before logging out (need permissions)
-        user.removeNotificationToken() { (error) in
-            if let error = error {
-                print(error)
-                spinner.indicatorView = JGProgressHUDErrorIndicatorView()
-                spinner.dismiss(afterDelay: 1)
-                return
-            } else {
-                do {
-                    try authorizer.signOut()
-                    print("Signed out user \(user.displayName ?? "(name unknown)").")
-                    
-                    spinner.dismiss()
-                    self.performSegue(withIdentifier: "logOutUnwindSegue", sender: self)
-                } catch {
-                    print("Could not log out: \(error.localizedDescription)")
-                    spinner.indicatorView = JGProgressHUDErrorIndicatorView()
-                    spinner.dismiss(afterDelay: 1)
-                }
-            }
-        }
-    }
+//    @IBAction func logOutPressed(_ sender: AnyObject) {
+//        users.removeListener()
+//
+//        let spinner = JGProgressHUD()
+//        spinner.show(in: view)
+//
+//        let authorizer = Auth.auth()
+//
+//        guard let user = authorizer.currentUser else {
+//            fatalError("❌ Tried to sign out while no one was logged in!")
+//        }
+//
+//        // Remove push notification token from user doc before logging out (need permissions)
+//        user.removeNotificationToken() { (error) in
+//            if let error = error {
+//                print(error)
+//                spinner.indicatorView = JGProgressHUDErrorIndicatorView()
+//                spinner.dismiss(afterDelay: 1)
+//                return
+//            } else {
+//                do {
+//                    try authorizer.signOut()
+//                    print("Signed out user \(user.displayName ?? "(name unknown)").")
+//
+//                    spinner.dismiss()
+//                    self.performSegue(withIdentifier: "logOutUnwindSegue", sender: self)
+//                } catch {
+//                    print("Could not log out: \(error.localizedDescription)")
+//                    spinner.indicatorView = JGProgressHUDErrorIndicatorView()
+//                    spinner.dismiss(afterDelay: 1)
+//                }
+//            }
+//        }
+//    }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Stop receiving new messages
@@ -1002,20 +1131,11 @@ extension ChatViewController: VersionDelegate {
         }
     }
     
+    // Don't let the server get messages composed with an out-of-date version of the app
     func deletePendingMessages() {
-        // Don't let the server get messages composed with an out-of-date version of the app
-//        for listener in listeners {
-//            listener
-//        }
-        
-//        Firestore.firestore().clearPersistence { error in
-//            if let error = error {
-//                print(error.localizedDescription)
-//            }
-//        }
-        
         // The basic query, without a starting bound
-        var query = self.messagesDB.order(by: "time")
+//        guard let messagesDB = messagesDB else { fatalError("❌ Can't get messagesDB.") }
+        var query = messagesDB.order(by: "time")
         
         // If there's was at least one message when loading, start from there
         if let oldestMessage = oldestMessage {

@@ -52,9 +52,12 @@ class RegisterViewController: UIViewController {
                         user.updateNotificationTokens()
                     }
                 }
+                
+                // TODO: Add user to group chat participants list
+                
                 // On successful registration, push to chat window
                 spinner.dismiss()
-                self.performSegue(withIdentifier: "goToChat", sender: self)
+                self.performSegue(withIdentifier: "goToContacts", sender: self)
             }
         }
         
@@ -64,9 +67,6 @@ class RegisterViewController: UIViewController {
         let authorizer = Auth.auth()
         authorizer.createUser(withEmail: email, password: password) { (result, error) in
             guard let result = result else {
-//                print("❌ Error registering user: \(error?.localizedDescription ?? "unknown")")
-//                self.spinner?.indicatorView = JGProgressHUDErrorIndicatorView()
-//                self.spinner?.dismiss(afterDelay: 1)
                 completion("❌ Error registering user: \(error?.localizedDescription ?? "unknown")")
                 return
             }
@@ -75,13 +75,6 @@ class RegisterViewController: UIViewController {
             print("👋 User with email \(email) registered (ID \(user.uid)).")
             // Add user name as displayName in Auth
             user.setProfileName(name) { (error) in completion(error) }
-            
-//            UserProfile.setProfileName(name, for: user, updateUserDocument: true) { (error) in
-////                if let error = error {
-//                    completion(error)
-////                    return
-////                }
-//            }
         }
     }
     
