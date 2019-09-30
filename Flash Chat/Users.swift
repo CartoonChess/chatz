@@ -12,6 +12,7 @@ import Firebase
 /// All users we've seen, so we can cache this data
 class Users {
     var profiles: [UserProfile]
+    var views: [UserProfileView]
     private var listener: ListenerRegistration?
     
     // TODO: Later, we would set listeners on friends list and then chatrooms as we visit them
@@ -20,6 +21,7 @@ class Users {
     
     init() {
         self.profiles = []
+        self.views = []
 //        self.listener = ListenerRegistration
     }
     
@@ -32,8 +34,26 @@ class Users {
     }
     
     deinit {
-        print("🐛 Killing Users object and taking its listener with it.")
+        print("☠️ Killing Users object and taking its listener with it.")
         listener?.remove()
+    }
+    
+    private func addUser(_ profile: UserProfile) {
+        profiles.append(profile)
+        let view = UserProfileView(user: profile)
+        views.append(view)
+    }
+    
+    private func updateUser(_ profile: UserProfile, at profilesIndex: Int, and viewsIndex: Int? = nil) {
+        profiles[profilesIndex] = profile
+        let viewsIndex = viewsIndex != nil ? viewsIndex! : profilesIndex
+        views.remove(at: viewsIndex)
+    }
+    
+    private func removeUser(at profilesIndex: Int, and viewsIndex: Int? = nil) {
+        profiles.remove(at: profilesIndex)
+        let viewsIndex = viewsIndex != nil ? viewsIndex! : profilesIndex
+        views.remove(at: viewsIndex)
     }
     
 //    private var listener: ListenerRegistration {
@@ -102,27 +122,40 @@ class Users {
                         continue
                     }
                     print("✅ Got user \(user.name).")
-                    self.profiles.append(user)
+//                    self.profiles.append(user)
+                    self.addUser(user)
                 case .modified:
                     guard let user = user else {
                         print("❌ User modified but couldn't create profile from server data.")
                         continue
                     }
-                    guard let index = self.profiles.firstIndex(where: { $0.id == id }) else {
+                    guard let profilesIndex = self.profiles.firstIndex(where: { $0.id == id }),
+                        let viewsIndex = self.views.firstIndex(where: { $0.user.id == id }) else {
                         print("❌ User modified but couldn't find profile in local data.")
                         continue
                     }
                     print("⚠️ User \(user.name) modified.")
-                    self.profiles[index] = user
+//                    self.profiles[index] = user
+                    if viewsIndex == profilesIndex {
+                        self.updateUser(user, at: profilesIndex)
+                    } else {
+                        self.updateUser(user, at: profilesIndex, and: viewsIndex)
+                    }
                 case .removed:
-                    guard let index = self.profiles.firstIndex(where: { $0.id == id }) else {
+                    guard let profilesIndex = self.profiles.firstIndex(where: { $0.id == id }),
+                        let viewsIndex = self.views.firstIndex(where: { $0.user.id == id }) else {
                         print("❌ User deleted but couldn't find profile in local data.")
                         continue
                     }
                     print("❌ User deleted.")
-                    self.profiles.remove(at: index)
+//                    self.profiles.remove(at: index)
+                    if viewsIndex == profilesIndex {
+                        self.removeUser(at: profilesIndex)
+                    } else {
+                        self.removeUser(at: profilesIndex, and: viewsIndex)
+                    }
                 @unknown default:
-                    fatalError("User profile changed in an unexpected way!")
+                    fatalError("🛑 User profile changed in an unexpected way!")
                 }
             }
             completion?()
@@ -257,6 +290,51 @@ class Users {
     
 }
 
+struct UserProfileView {
+    let user: UserProfile
+    
+//    var color = UIColor(white: 0, alpha: 1)
+//
+//    mutating func updateUserColor(_ color: UIColor?) -> UIColor {
+//        var color = color
+//        // Create a new color if we haven't assigned one yet
+//        if color == nil {
+//            let red = CGFloat.random(in: 0.0...1.0)
+//            let green = CGFloat.random(in: 0.0...1.0)
+//            let blue = CGFloat.random(in: 0.0...1.0)
+//            color = UIColor(red: red, green: green, blue: blue, alpha: 1)
+//        }
+//        // Update ourself
+//        self.color = color!
+//        // And keep track in table view controller
+//        return color!
+//    }
+    
+//    private var color_: UIColor?
+//    var color: UIColor {
+//        get {
+//            if let color = color_ {
+//                return color
+//            } else {
+//                return UIColor.random
+//            }
+//        }
+//        set {
+//            color_ = newValue
+//        }
+//    }
+    let color: UIColor
+    
+    init(user: UserProfile, color: UIColor? = nil) {
+        self.user = user
+        self.color = color ?? UIColor.random
+//        if let color = color {
+//            self.color_ = color
+//        } else {
+//            self.color_ = UIColor.random
+//        }
+    }
+}
 
 /// Custom user object representing user info tied to UID
 struct UserProfile: Decodable {

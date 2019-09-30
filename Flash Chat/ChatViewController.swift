@@ -108,12 +108,14 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
         }
         
-        // Load users
-        users.fetch() {
-            // Change title to user name
-            // Note that in debug this must be called after getting users
-            self.updateViewTitle()
-        }
+//        // Load users
+//        users.fetch() {
+//            // Change title to user name
+//            // Note that in debug this must be called after getting users
+//            self.updateViewTitle()
+//        }
+        
+        // TODO: Update view with chat/user name
         
         // Load most recent messages and keep observing for new ones
         getRecentMessages(showProgress: true)
@@ -134,35 +136,35 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         timer.invalidate()
     }
     
-    func updateViewTitle() {
-        guard let user = Auth.auth().currentUser else {
-            fatalError("❌ Can't update view title: No logged in user found!")
-        }
-        
-        if let name = user.displayName {
-            navigationItem.title = name
-        }
-//        } else {
-//            // If display name was never set and we're debugging, update the user table
-//            #if DEBUG
-//            assert(!users.profiles.isEmpty, "🛑 Users object wasn't properly initialized before calling updateViewTitle().")
-//            guard let profile = users.profiles.first(where: { $0.id == user.uid }) else {
-//                fatalError("❌ Can't update view title: User isn't in users collection!")
-//            }
-//            let name = profile.name
-//            UserProfile.setProfileName(name, for: user, updateUserDocument: false) { (error) in
-//                if let error = error {
-//                    print("Error adding unset username: \(error).")
-//                } else {
-//                    print("✅ Added unset username.")
-//                }
-//            }
-//            navigationItem.title = name
-//            #else
-//                return
-//            #endif
+//    func updateViewTitle() {
+//        guard let user = Auth.auth().currentUser else {
+//            fatalError("❌ Can't update view title: No logged in user found!")
 //        }
-    }
+//
+//        if let name = user.displayName {
+//            navigationItem.title = name
+//        }
+////        } else {
+////            // If display name was never set and we're debugging, update the user table
+////            #if DEBUG
+////            assert(!users.profiles.isEmpty, "🛑 Users object wasn't properly initialized before calling updateViewTitle().")
+////            guard let profile = users.profiles.first(where: { $0.id == user.uid }) else {
+////                fatalError("❌ Can't update view title: User isn't in users collection!")
+////            }
+////            let name = profile.name
+////            UserProfile.setProfileName(name, for: user, updateUserDocument: false) { (error) in
+////                if let error = error {
+////                    print("Error adding unset username: \(error).")
+////                } else {
+////                    print("✅ Added unset username.")
+////                }
+////            }
+////            navigationItem.title = name
+////            #else
+////                return
+////            #endif
+////        }
+//    }
     
 
     ///////////////////////////////////////////
@@ -179,7 +181,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         let messageWasSent = !(message.time == Date(timeIntervalSince1970: 0))
         
 //        colorForUser[message.sender] = cell.updateUserColor(colorForUser[message.sender])
-        colorForUser[message.sender] = messageView.updateUserColor(colorForUser[message.sender])
+//        colorForUser[message.sender] = messageView.updateUserColor(colorForUser[message.sender])
         
         let highlightable = messagesToHighlight.contains(message.id ?? "nil")
         cell.construct(using: messageView,
@@ -364,7 +366,8 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
             // The listener for new messages will grab the most recent ones
             
             // The basic query, without a starting bound
-            var query = self.messagesDB.order(by: "time")
+            // We limit it to the maximum plus one, so we never get too many
+            var query = self.messagesDB.order(by: "time").limit(to: limit + 1)
 //            // Exclude any deleted documents (sometimes server is slow)
 //            let existingMessages = snapshot.documents.map { $0.exists }
             
@@ -404,14 +407,11 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
                     // We'll want to handle this more gracefully in the future
                     print("⚠️ We received a ton of messages! Refreshing the view.")
                     self.removeListeners()
-                    print("🐛🐛🐛 Remove listeners called; this is the next line.")
                     self.messages.removeAll()
                     self.messageTableView.reloadData()
-                    print("🐛🐛🐛 About to call getRecentMessages; listeners count: \(self.listeners.count)")
                     // Clear the spinner before we start the next operation
                     completion?()
                     self.getRecentMessages(showProgress: true)
-                    print("🐛🐛🐛 getRecentMessages called; this is the next line.")
                     // Don't continue with display operations below
                     return
                 }
@@ -983,14 +983,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
 extension ChatViewController: VersionDelegate {
     
     func appVersionWasChecked(meetsMinimum: Bool) {
-        if meetsMinimum {
-            // If we don't have any message listeners yet, start the listening process
-            print("🐛🐛🐛 meetsMinimum is true")
-//            if listeners.isEmpty {
-//                // FIXME: This is in a race condition with the main load, since listeners are created asyncd
-//                getRecentMessages()
-//            }
-        } else {
+        if !meetsMinimum {
             // Warn user
             let otherHuds = JGProgressHUD.allProgressHUDs(in: view)
             otherHuds.forEach { $0.dismiss() }

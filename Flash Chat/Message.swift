@@ -31,23 +31,27 @@ class MessageView {
         } else {
             let name = users.profiles.first { $0.id == uid }?.name
             self.sender = name ?? "User"
+            
+            let color = users.views.first { $0.user.id == uid }?.color
+            self.color = color ?? UIColor(white: 0, alpha: 1)
         }
+        
     }
     
-    func updateUserColor(_ color: UIColor?) -> UIColor {
-        var color = color
-        // Create a new color if we haven't assigned one yet
-        if color == nil {
-            let red = CGFloat.random(in: 0.0...1.0)
-            let green = CGFloat.random(in: 0.0...1.0)
-            let blue = CGFloat.random(in: 0.0...1.0)
-            color = UIColor(red: red, green: green, blue: blue, alpha: 1)
-        }
-        // Show in cell
-        self.color = color!
-        // And keep track in table view controller
-        return color!
-    }
+//    func updateUserColor(_ color: UIColor?) -> UIColor {
+//        var color = color
+//        // Create a new color if we haven't assigned one yet
+//        if color == nil {
+//            let red = CGFloat.random(in: 0.0...1.0)
+//            let green = CGFloat.random(in: 0.0...1.0)
+//            let blue = CGFloat.random(in: 0.0...1.0)
+//            color = UIColor(red: red, green: green, blue: blue, alpha: 1)
+//        }
+//        // Show in cell
+//        self.color = color!
+//        // And keep track in table view controller
+//        return color!
+//    }
 }
 
 class Message {

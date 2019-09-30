@@ -18,7 +18,8 @@ class WelcomeViewController: UIViewController {
             //- Get existing permissions for notifications
             Permissions.ask(for: .notification)
             //- Then move to the chat
-            performSegue(withIdentifier: "goToChat", sender: nil)
+//            performSegue(withIdentifier: "goToChat", sender: nil)
+            performSegue(withIdentifier: "ContactsListSegue", sender: nil)
         }
     }
 

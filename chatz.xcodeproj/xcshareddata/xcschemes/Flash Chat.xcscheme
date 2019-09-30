@@ -17,7 +17,7 @@
                BlueprintIdentifier = "6321A9B51B94EBA10053D2E7"
                BuildableName = "chatz.app"
                BlueprintName = "chatz"
-               ReferencedContainer = "container:Flash Chat.xcodeproj">
+               ReferencedContainer = "container:chatz.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -56,7 +56,7 @@
             BlueprintIdentifier = "6321A9B51B94EBA10053D2E7"
             BuildableName = "chatz.app"
             BlueprintName = "chatz"
-            ReferencedContainer = "container:Flash Chat.xcodeproj">
+            ReferencedContainer = "container:chatz.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -66,16 +66,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "6321A9B51B94EBA10053D2E7"
             BuildableName = "chatz.app"
             BlueprintName = "chatz"
-            ReferencedContainer = "container:Flash Chat.xcodeproj">
+            ReferencedContainer = "container:chatz.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
