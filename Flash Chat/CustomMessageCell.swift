@@ -25,15 +25,6 @@ class CustomMessageCell: UITableViewCell {
     var message: MessageView?
     
     let themeColor = UIColor.systemOrange
-    var systemBackgroundColor: UIColor {
-        get {
-            if #available(iOS 13, *) {
-                return .systemBackground
-            } else {
-                return .white
-            }
-        }
-    }
     
     
     // MARK: - Methods
@@ -61,12 +52,12 @@ class CustomMessageCell: UITableViewCell {
         if senderIsSelf {
             selfImageView.image = image
             senderUsername.isHidden = true
-            messageBody.textColor = systemBackgroundColor
+            messageBody.textColor = .systemAppearanceBackground
         } else {
             avatarImageView.image = image
             avatarImageView.backgroundColor = message?.color
             messageBody.textColor = themeColor
-            messageBackground.backgroundColor = systemBackgroundColor
+            messageBackground.backgroundColor = .systemAppearanceBackground
         }
         
         // Toggle visibility
@@ -98,7 +89,7 @@ class CustomMessageCell: UITableViewCell {
     private func isHighlightable(_ highlightable: Bool) {
         if !highlightable {
 //            backgroundColor = .white
-            backgroundColor = systemBackgroundColor
+            backgroundColor = .systemAppearanceBackground
         } else {
             backgroundColor = nil
         }
@@ -109,7 +100,7 @@ class CustomMessageCell: UITableViewCell {
         
         messageBody.text = "Message deleted."
         messageBackground.backgroundColor = UIColor.systemGray
-        messageBody.textColor = systemBackgroundColor
+        messageBody.textColor = .systemAppearanceBackground
         messageBody.textAlignment = .center
         
         selfImageView.isHidden = true
@@ -125,7 +116,7 @@ class CustomMessageCell: UITableViewCell {
         contentView.alpha = 1
         
         messageBackground.backgroundColor = themeColor
-        messageBody.textColor = systemBackgroundColor
+        messageBody.textColor = .systemAppearanceBackground
         
         avatarImageView.isHidden = false
         avatarImageView.image = nil

@@ -26,6 +26,11 @@
 		AE2D18E02340DD7A004CA4BE /* RoomPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2D18DF2340DD7A004CA4BE /* RoomPreview.swift */; };
 		AE2D18E22340EF91004CA4BE /* UIColor+random.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2D18E12340EF91004CA4BE /* UIColor+random.swift */; };
 		AE2F4F82232F519C003EBC4C /* Users.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2F4F81232F519C003EBC4C /* Users.swift */; };
+		AE5EBFD3234EE37000BCED74 /* Badges+appIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5EBFD2234EE37000BCED74 /* Badges+appIcon.swift */; };
+		AE5EBFDA234F09A200BCED74 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AE5EBFDD234F09A200BCED74 /* Localizable.strings */; };
+		AE5EBFDB234F09A200BCED74 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AE5EBFDD234F09A200BCED74 /* Localizable.strings */; };
+		AE5EBFDE234F09A700BCED74 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = AE5EBFE1234F09A700BCED74 /* Localizable.stringsdict */; };
+		AE5EBFDF234F09A700BCED74 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = AE5EBFE1234F09A700BCED74 /* Localizable.stringsdict */; };
 		AE9D04E2232A00A10087F03A /* Date+readable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE9D04E1232A00A10087F03A /* Date+readable.swift */; };
 		AEA591D02338BA8D0025AA20 /* Version.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA591CF2338BA8D0025AA20 /* Version.swift */; };
 		AEA591D2233916660025AA20 /* DimmableTableViewCellTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA591D1233916660025AA20 /* DimmableTableViewCellTextField.swift */; };
@@ -33,6 +38,11 @@
 		AEA591DE233AFDCB0025AA20 /* ChatzNotificationServiceExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AEA591D7233AFDCA0025AA20 /* ChatzNotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AEA591E5233B30580025AA20 /* PropertyKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA591E4233B30580025AA20 /* PropertyKeys.swift */; };
 		AEA591E6233B30580025AA20 /* PropertyKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA591E4233B30580025AA20 /* PropertyKeys.swift */; };
+		AEAADFEE2348721900734DE3 /* Badges.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEAADFED2348721900734DE3 /* Badges.swift */; };
+		AEAADFEF2348721900734DE3 /* Badges.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEAADFED2348721900734DE3 /* Badges.swift */; };
+		AEADD73E23487FEE00FC2158 /* UISwitch+darkModeThumb.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEADD73D23487FEE00FC2158 /* UISwitch+darkModeThumb.swift */; };
+		AEADD7402348BE5000FC2158 /* UNUserNotificationCenter+removeNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEADD73F2348BE5000FC2158 /* UNUserNotificationCenter+removeNotifications.swift */; };
+		AEADD7422349CD1100FC2158 /* NotificationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEADD7412349CD1100FC2158 /* NotificationHandler.swift */; };
 		AEE096452326391F003E13D8 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AEE096442326391F003E13D8 /* GoogleService-Info.plist */; };
 		AEE7EA9723308B8E00172026 /* Permissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEE7EA9623308B8E00172026 /* Permissions.swift */; };
 /* End PBXBuildFile section */
@@ -84,6 +94,9 @@
 		AE2D18DF2340DD7A004CA4BE /* RoomPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomPreview.swift; sourceTree = "<group>"; };
 		AE2D18E12340EF91004CA4BE /* UIColor+random.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+random.swift"; sourceTree = "<group>"; };
 		AE2F4F81232F519C003EBC4C /* Users.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Users.swift; sourceTree = "<group>"; };
+		AE5EBFD2234EE37000BCED74 /* Badges+appIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Badges+appIcon.swift"; sourceTree = "<group>"; };
+		AE5EBFDC234F09A200BCED74 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AE5EBFE0234F09A700BCED74 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		AE9D04E1232A00A10087F03A /* Date+readable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+readable.swift"; sourceTree = "<group>"; };
 		AEA591CF2338BA8D0025AA20 /* Version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Version.swift; sourceTree = "<group>"; };
 		AEA591D1233916660025AA20 /* DimmableTableViewCellTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DimmableTableViewCellTextField.swift; sourceTree = "<group>"; };
@@ -92,6 +105,10 @@
 		AEA591DB233AFDCB0025AA20 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AEA591E3233B00050025AA20 /* ChatzNotificationServiceExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChatzNotificationServiceExtension.entitlements; sourceTree = "<group>"; };
 		AEA591E4233B30580025AA20 /* PropertyKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyKeys.swift; sourceTree = "<group>"; };
+		AEAADFED2348721900734DE3 /* Badges.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Badges.swift; sourceTree = "<group>"; };
+		AEADD73D23487FEE00FC2158 /* UISwitch+darkModeThumb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UISwitch+darkModeThumb.swift"; sourceTree = "<group>"; };
+		AEADD73F2348BE5000FC2158 /* UNUserNotificationCenter+removeNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UNUserNotificationCenter+removeNotifications.swift"; sourceTree = "<group>"; };
+		AEADD7412349CD1100FC2158 /* NotificationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationHandler.swift; sourceTree = "<group>"; };
 		AEE096442326391F003E13D8 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AEE7EA9623308B8E00172026 /* Permissions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Permissions.swift; sourceTree = "<group>"; };
 		AEE7EA982330A84000172026 /* Flash Chat.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Flash Chat.entitlements"; sourceTree = "<group>"; };
@@ -157,6 +174,8 @@
 		6321A9B81B94EBA10053D2E7 /* Flash Chat */ = {
 			isa = PBXGroup;
 			children = (
+				AE5EBFE1234F09A700BCED74 /* Localizable.stringsdict */,
+				AE5EBFDD234F09A200BCED74 /* Localizable.strings */,
 				AEE7EA982330A84000172026 /* Flash Chat.entitlements */,
 				6321A9EE1B94EC360053D2E7 /* Model */,
 				6321A9EB1B94EC170053D2E7 /* View */,
@@ -190,6 +209,10 @@
 			children = (
 				63E28B2A1B9A337600FBF6E0 /* AppDelegate.swift */,
 				AEE7EA9623308B8E00172026 /* Permissions.swift */,
+				AEAADFED2348721900734DE3 /* Badges.swift */,
+				AE5EBFD2234EE37000BCED74 /* Badges+appIcon.swift */,
+				AEADD7412349CD1100FC2158 /* NotificationHandler.swift */,
+				AEADD73F2348BE5000FC2158 /* UNUserNotificationCenter+removeNotifications.swift */,
 				63E28B2E1B9A337600FBF6E0 /* WelcomeViewController.swift */,
 				63E28B2D1B9A337600FBF6E0 /* RegisterViewController.swift */,
 				63E28B2C1B9A337600FBF6E0 /* LogInViewController.swift */,
@@ -221,6 +244,7 @@
 				AEA591CF2338BA8D0025AA20 /* Version.swift */,
 				AE9D04E1232A00A10087F03A /* Date+readable.swift */,
 				AE2D18E12340EF91004CA4BE /* UIColor+random.swift */,
+				AEADD73D23487FEE00FC2158 /* UISwitch+darkModeThumb.swift */,
 				AE2D18DB23407633004CA4BE /* PaddedLabel.swift */,
 			);
 			name = Model;
@@ -344,8 +368,10 @@
 			files = (
 				63E28B291B9A336600FBF6E0 /* Main.storyboard in Resources */,
 				6321A9C31B94EBA10053D2E7 /* Images.xcassets in Resources */,
+				AE5EBFDE234F09A700BCED74 /* Localizable.stringsdict in Resources */,
 				63EBB3051D98004B004175E5 /* LaunchScreen.storyboard in Resources */,
 				6321A9E51B94EBE70053D2E7 /* MessageCell.xib in Resources */,
+				AE5EBFDA234F09A200BCED74 /* Localizable.strings in Resources */,
 				AE2D18D923405E8B004CA4BE /* RoomListCell.xib in Resources */,
 				AEE096452326391F003E13D8 /* GoogleService-Info.plist in Resources */,
 			);
@@ -355,6 +381,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AE5EBFDF234F09A700BCED74 /* Localizable.stringsdict in Resources */,
+				AE5EBFDB234F09A200BCED74 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -425,10 +453,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				AEE7EA9723308B8E00172026 /* Permissions.swift in Sources */,
+				AEADD7422349CD1100FC2158 /* NotificationHandler.swift in Sources */,
+				AEADD7402348BE5000FC2158 /* UNUserNotificationCenter+removeNotifications.swift in Sources */,
 				AE2D18D7234030FC004CA4BE /* ContactsTableViewController.swift in Sources */,
 				63E28B331B9A337600FBF6E0 /* WelcomeViewController.swift in Sources */,
+				AE5EBFD3234EE37000BCED74 /* Badges+appIcon.swift in Sources */,
 				AE2D18DC23407633004CA4BE /* PaddedLabel.swift in Sources */,
 				AEA591E5233B30580025AA20 /* PropertyKeys.swift in Sources */,
+				AEADD73E23487FEE00FC2158 /* UISwitch+darkModeThumb.swift in Sources */,
 				63E28B251B9A335300FBF6E0 /* Message.swift in Sources */,
 				AE2D18DE23407E52004CA4BE /* RoomListCell.swift in Sources */,
 				6321A9E21B94EBE70053D2E7 /* CustomMessageCell.swift in Sources */,
@@ -442,6 +474,7 @@
 				AEA591D2233916660025AA20 /* DimmableTableViewCellTextField.swift in Sources */,
 				AE2D18E22340EF91004CA4BE /* UIColor+random.swift in Sources */,
 				AEA591D02338BA8D0025AA20 /* Version.swift in Sources */,
+				AEAADFEE2348721900734DE3 /* Badges.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -450,6 +483,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AEA591E6233B30580025AA20 /* PropertyKeys.swift in Sources */,
+				AEAADFEF2348721900734DE3 /* Badges.swift in Sources */,
 				AEA591DA233AFDCB0025AA20 /* NotificationService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -463,6 +497,25 @@
 			targetProxy = AEA591DC233AFDCB0025AA20 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		AE5EBFDD234F09A200BCED74 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AE5EBFDC234F09A200BCED74 /* en */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		AE5EBFE1234F09A700BCED74 /* Localizable.stringsdict */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AE5EBFE0234F09A700BCED74 /* en */,
+			);
+			name = Localizable.stringsdict;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		6321A9D31B94EBA10053D2E7 /* Debug */ = {

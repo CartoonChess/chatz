@@ -40,7 +40,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Set ourselves as the Notification Center delegate (must be performed at app launch)
         // This allows us to display push notifications (sent via APNs)
         if #available(iOS 10.0, *) {
-            UNUserNotificationCenter.current().delegate = self
+            UNUserNotificationCenter.current().delegate = NotificationHandler.current
+            
+            // Customize the "x more notifications from y" bottom text
+            if #available(iOS 12.0, *) {
+                let options = UNNotificationCategoryOptions() // not sure what to do with these
+                // This is defined in .stringsdict (%u = number of msgs, %@ = username)
+                let summaryFormat = NSString.localizedUserNotificationString(forKey: "moreMessages", arguments: nil)
+                let messageCategory = UNNotificationCategory(identifier: "message",
+                                                      actions: [],
+                                                      intentIdentifiers: [],
+                                                      hiddenPreviewsBodyPlaceholder: "Message",
+                                                      categorySummaryFormat: summaryFormat,
+                                                      options: options)
+                // TODO: Move all this to Handler init
+                //- Will it still work when app has quit?
+                
+                UNUserNotificationCenter.current().setNotificationCategories([messageCategory])
+            }
         }
         // Also display in-app messages (sent directly via Firebase)
         Messaging.messaging().delegate = self
@@ -70,33 +87,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print("❌ Unable to register for remote notifications: \(error.localizedDescription)")
     }
     
-    // NOTE: Actually these don't appear to be triggered ever
-    // User entered the app by tapping a push notification; this executes once the app loads (see also below)
-    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
-        // Let Firebase know about the message for analytics (since swizzling is disabled)
-         Messaging.messaging().appDidReceiveMessage(userInfo)
-        
-        if let messageID = userInfo[gcmMessageIDKey] {
-            print("🐛 didReceiveRemoteNotification (no handler); Message ID: \(messageID)")
-        }
-        print(userInfo)
-        
-        // TODO: Handle notification data
-    }
-    
-    // User entered the app by tapping a push notification; this executes once the app loads
-    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        // Let Firebase know about the message for analytics (since swizzling is disabled)
-         Messaging.messaging().appDidReceiveMessage(userInfo)
-        
-        if let messageID = userInfo[gcmMessageIDKey] {
-            print("🐛 didReceiveRemoteNotification (with handler); Message ID: \(messageID)")
-        }
-        print(userInfo)
-        
-        // TODO: Handle notification data and use completion handler
-        completionHandler(UIBackgroundFetchResult.newData)
-    }
+//    // Used when a silent update is pushed to the app using content-available (see also below)
+//    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
+//        // Let Firebase know about the message for analytics (since swizzling is disabled)
+//         Messaging.messaging().appDidReceiveMessage(userInfo)
+//
+//        if let messageID = userInfo[gcmMessageIDKey] {
+//            print("🐛 didReceiveRemoteNotification (no handler); Message ID: \(messageID)")
+//        }
+//        print(userInfo)
+//
+//        // TODO: Handle notification data
+//    }
+//
+//    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+//        // Let Firebase know about the message for analytics (since swizzling is disabled)
+//         Messaging.messaging().appDidReceiveMessage(userInfo)
+//
+//        if let messageID = userInfo[gcmMessageIDKey] {
+//            print("🐛 didReceiveRemoteNotification (with handler); Message ID: \(messageID)")
+//        }
+//        print(userInfo)
+//
+//        // TODO: Handle notification data and use completion handler
+//        completionHandler(UIBackgroundFetchResult.newData)
+//    }
 
     
     
@@ -115,9 +130,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
         
-        // Clear notifications and badge
-        application.applicationIconBadgeNumber = 0
-        UserDefaults(suiteName: AppKeys.appGroup)?.set(0, forKey: SettingsKeys.badges)
+        let allBadges = UserDefaults(suiteName: AppKeys.appGroup)?.dictionary(forKey: SettingsKeys.badges) as? [String: Int] ?? [:]
+        print("🐛🔴 allBadges: \(allBadges)")
+        
+//        // Clear notifications and badge
+//        application.applicationIconBadgeNumber = 0
+//        UserDefaults(suiteName: AppKeys.appGroup)?.set(0, forKey: SettingsKeys.badges)
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
@@ -133,41 +151,42 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 // MARK: - Extensions
 
-@available(iOS 10, *)
-extension AppDelegate: UNUserNotificationCenterDelegate {
-    // Do something with push notifications when app is already in the foreground
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        print("🐛 userNotificationCenter(...willPresent...)")
-        let userInfo = notification.request.content.userInfo
-        // With swizzling disabled you must let Messaging know about the message, for Analytics
-        Messaging.messaging().appDidReceiveMessage(userInfo)
-        // Print message ID
-        if let messageID = userInfo[gcmMessageIDKey] {
-            print("willPresent Message ID: \(messageID)")
-        }
-        // Print full message
-        print(userInfo)
-        
-        // TODO: Present foreground notifications
-        completionHandler([])
-    }
-    
-    // Handles response options to push notifications, such as dismiss, open, etc.
-    // Includes when the user taps a notification?
-    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        print("🐛 userNotificationCenter(...didReceive...)")
-        let userInfo = response.notification.request.content.userInfo
-        // Print message ID
-        if let messageID = userInfo[gcmMessageIDKey] {
-            print("didReceive_response Message ID: \(messageID)")
-        }
-        // Print full message
-        print(userInfo)
-        
-        // TODO: Handle notification responses
-        completionHandler()
-    }
-}
+//@available(iOS 10, *)
+//extension AppDelegate: UNUserNotificationCenterDelegate {
+//    // Do something with push notifications when app is already in the foreground
+//    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+//        print("✴️ userNotificationCenter:willPresent")
+//        let userInfo = notification.request.content.userInfo
+//        // With swizzling disabled you must let Messaging know about the message, for Analytics
+//        Messaging.messaging().appDidReceiveMessage(userInfo)
+//        // Print message ID
+//        if let messageID = userInfo[gcmMessageIDKey] {
+//            print("willPresent Message ID: \(messageID)")
+//        }
+//        // Print full message
+//        print(userInfo)
+//
+//        // TODO: Present foreground notifications
+//        completionHandler([])
+//    }
+//
+//    // Triggers when the user taps a notification
+//    // Handles response options such as dismiss, open, etc.?
+//    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+//        print("✴️ userNotificationCenter:didReceive")
+//        let userInfo = response.notification.request.content.userInfo
+//
+//        // Print message ID
+//        if let messageID = userInfo[gcmMessageIDKey] {
+//            print("didReceive_response Message ID: \(messageID)")
+//        }
+//        // Print full message
+//        print(userInfo)
+//
+//        // TODO: Handle notification responses
+//        completionHandler()
+//    }
+//}
 
 extension AppDelegate: MessagingDelegate {
     // message(_:didReceiveRegistrationToken:) is called whenever Firebase receives a new token
@@ -203,6 +222,7 @@ extension AppDelegate: MessagingDelegate {
     // 1. sending upstream messages
     // 2. receiving non-APNs data directly from Firebase
 //    func messaging(_ messaging: Messaging, didReceive remoteMessage: MessagingRemoteMessage) {
+//        print("✴️ messaging")
 //        print("Received data message: \(remoteMessage.appData)")
 //    }
 }

@@ -10,12 +10,20 @@ import UIKit
 import Firebase
 import JGProgressHUD
 
-class ChatViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+// Set as a table view so that we can manipulate the back button
+protocol ChatViewControllerDelegate {
+    /// Notify the contact list that the messages have been read
+    func didReadMessages(in roomID: String)
+}
+
+class ChatViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, NotificationHandlerDelegate {
+    
     // MARK: - Properties -
+    
+    var delegate: ChatViewControllerDelegate?
     
     // Room collection (room ID and messages collection will be added on later)
 //    // "lazy" fixes crash from initializing before AppDelegate configures Firebase
-//    lazy var messagesDB = Firestore.firestore().collection("messages_4")
     lazy var messagesDB = Firestore.firestore().collection("rooms")
 //    var messagesDB: CollectionReference?
     // Local copy
@@ -36,6 +44,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     // Avoid downloading too many messages at once
     let messagesToFetch = 20
 //    var newMessagesBeforeUpdates = 0
+    var cacheIsEmpty = false
     
     // For refreshing timestamps
     var timer = Timer()
@@ -79,8 +88,9 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Hide the back button
-//        navigationItem.hidesBackButton = false
+        
+        // To receive notifications while in the foreground...
+        NotificationHandler.current.delegate = self
         
         // TableView setup
         messageTableView.delegate = self
@@ -91,6 +101,9 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         // See if we need to listen for app meeting minimum version
         Version.current.listen(from: self)
+        
+        // Watch for app returning from background
+        NotificationCenter.default.addObserver(self, selector:#selector(didBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
         
         // Watch for keyboard appearing
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -108,30 +121,8 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
         }
         
-//        // Load users
-//        users.fetch() {
-//            // Change title to user name
-//            // Note that in debug this must be called after getting users
-//            self.updateViewTitle()
-//        }
-        
         // Update title with chat/user name
         navigationItem.title = roomName
-        
-//        // Determine messages collection path
-//        if let roomID = roomID {
-//            // The chat already exists
-//            messagesDB = Firestore.firestore().collection("rooms").document(roomID).collection("messages")
-//
-//            // Load most recent messages and keep observing for new ones
-//            getRecentMessages(showProgress: true)
-//
-//            // Allow user to pull to refresh
-//            configureRefreshControl()
-//        } else {
-//            // This is a new, empty chat
-//            messagesDB = createRoom().collection("messages")
-//        }
         
         // Determine messages collection path
         messagesDB = messagesDB.document(roomID).collection("messages")
@@ -141,19 +132,38 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         // Allow user to pull to refresh
         configureRefreshControl()
-        
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+    /// This will be triggered by AppDelegate
+    @objc func didBecomeActive() {
+        // Readjust the view, in case the keyboard is showing
+        keyboardWillUpdate(height: messageTableViewOffset)
+        
+        // Remove badges count from contacts list
+        delegate?.didReadMessages(in: roomID)
+        
+        // Update timestamps
         if !messages.isEmpty {
             startTimer()
         }
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        timer.invalidate()
+    // NotificationHandler delegate method
+    func willPresentNotification(_ notification: UNNotification, options: (UNNotificationPresentationOptions) -> Void) {
+        if notification.request.content.threadIdentifier == roomID {
+            // Notification is for this chat, so silence it
+            options([])
+            // Clear plist and let contact list know to ignore notification
+            Badges.remove(for: roomID)
+            delegate?.didReadMessages(in: roomID)
+        } else {
+            // Notification is for different chat, so do everything
+            options([.alert, .badge, .sound])
+        }
+    }
+    
+    func didReceiveTapOnNotification(for roomID: String) {
+        // TODO: Implement
     }
     
 //    func updateViewTitle() {
@@ -375,41 +385,92 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // This is used only for the initial (recents+new) load
     func addListenerFromUnknownStart(limit: Int = Int.max, descending: Bool = true, appendToTop: Bool = false, completion: (() -> Void)? = nil) {
-        // Query for getRecentMessages
-        // We must include current time to get the limit-number of messages PLUS any unsent messages
-        // This prevents the query from paginating on an unsent message (null time), which will cause a crash
-//        guard let messagesDB = messagesDB else { fatalError("❌ Can't get messagesDB.") }
-        let query = messagesDB.order(by: "time", descending: descending).start(at: [Date()]).limit(to: limit)
-//        let query = messagesDB.order(by: "time", descending: descending).limit(to: limit)
-        
-        query.getDocuments { (snapshot, error) in
-            guard let snapshot = snapshot else {
-                print("Initialize: Could not listen for messages: \(error?.localizedDescription ?? "(unknown error)")")
-                completion?()
-                return
+            // Query for getRecentMessages
+            // We must include current time to get the limit-number of messages PLUS any unsent messages
+            // This prevents the query from paginating on an unsent message (null time), which will cause a crash
+    //        guard let messagesDB = messagesDB else { fatalError("❌ Can't get messagesDB.") }
+            let query = messagesDB.order(by: "time", descending: descending).start(at: [Date()]).limit(to: limit)
+    //        let query = messagesDB.order(by: "time", descending: descending).limit(to: limit)
+            
+            query.getDocuments { (snapshot, error) in
+                guard let snapshot = snapshot else {
+                    print("Initialize: Could not listen for messages: \(error?.localizedDescription ?? "(unknown error)")")
+                    completion?()
+                    return
+                }
+                
+                // If we're offline and found no cached messages, prevent retrieving all messages once online
+                if snapshot.metadata.isFromCache,
+                    snapshot.count == 0 {
+//                    // Tell the timer to ignore timestamps, and just try for messages again soon
+//                    self.startTimer(offline: true)
+                    // Wait until we're online to allow sending/receiving
+                    self.cacheIsEmpty = true
+                    // Don't continue on with the rest until we're online
+                    return
+                } else {
+                    // If we're online after being offline, make sure we stop the timer from refetching messages
+                    self.timer.invalidate()
+                }
+                
+                // We actually only called this getDocuments to find out the start point
+                // The listener for new messages will grab the most recent ones
+                
+                // The basic query, without a starting bound
+//                // We limit it to the maximum plus one, so we never get too many
+//                var query = self.messagesDB.order(by: "time").limit(to: limit + 1)
+                var query = self.messagesDB.order(by: "time")
+    //            // Exclude any deleted documents (sometimes server is slow)
+    //            let existingMessages = snapshot.documents.map { $0.exists }
+                
+                // If there's at least one message, start from the oldest (while respecting limit var)
+                // This should also be ignored if every message is a pending message
+                if let oldestMessage = snapshot.documents.last {
+                    query = query.start(atDocument: oldestMessage)
+                    self.oldestMessage = oldestMessage
+                }
+                
+                self.addListener(query: query) { completion?() }
+                
             }
-            
-            // We actually only called this getDocuments to find out the start point
-            // The listener for new messages will grab the most recent ones
-            
-            // The basic query, without a starting bound
-            // We limit it to the maximum plus one, so we never get too many
-            var query = self.messagesDB.order(by: "time").limit(to: limit + 1)
-//            // Exclude any deleted documents (sometimes server is slow)
-//            let existingMessages = snapshot.documents.map { $0.exists }
-            
-            // If there's at least one message, start from the oldest (while respecting limit var)
-            // This should also be ignored if every message is a pending message
-            if let oldestMessage = snapshot.documents.last {
-                query = query.start(atDocument: oldestMessage)
-                self.oldestMessage = oldestMessage
-            }
-            
-            self.addListener(query: query) { completion?() }
             
         }
-        
-    }
+//    func addListenerFromUnknownStart(limit: Int = Int.max, descending: Bool = true, appendToTop: Bool = false, completion: (() -> Void)? = nil) {
+//        // Query for getRecentMessages
+//        // We must include current time to get the limit-number of messages PLUS any unsent messages
+//        // This prevents the query from paginating on an unsent message (null time), which will cause a crash
+////        guard let messagesDB = messagesDB else { fatalError("❌ Can't get messagesDB.") }
+//        let query = messagesDB.order(by: "time", descending: descending).start(at: [Date()]).limit(to: limit)
+////        let query = messagesDB.order(by: "time", descending: descending).limit(to: limit)
+//
+//        query.getDocuments { (snapshot, error) in
+//            guard let snapshot = snapshot else {
+//                print("Initialize: Could not listen for messages: \(error?.localizedDescription ?? "(unknown error)")")
+//                completion?()
+//                return
+//            }
+//
+//            // We actually only called this getDocuments to find out the start point
+//            // The listener for new messages will grab the most recent ones
+//
+//            // The basic query, without a starting bound
+//            // We limit it to the maximum plus one, so we never get too many
+//            var query = self.messagesDB.order(by: "time").limit(to: limit + 1)
+////            // Exclude any deleted documents (sometimes server is slow)
+////            let existingMessages = snapshot.documents.map { $0.exists }
+//
+//            // If there's at least one message, start from the oldest (while respecting limit var)
+//            // This should also be ignored if every message is a pending message
+//            if let oldestMessage = snapshot.documents.last {
+//                query = query.start(atDocument: oldestMessage)
+//                self.oldestMessage = oldestMessage
+//            }
+//
+//            self.addListener(query: query) { completion?() }
+//
+//        }
+//
+//    }
     
     /// Listen for new messages from other clients
     func addListener(query: Query, appendToTop: Bool = false, completion: (() -> Void)? = nil) {
@@ -661,7 +722,6 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         sendButton.isEnabled = false
         
         // Get message data
-//        let sender = Auth.auth().currentUser?.email ?? "(unknown)"
         let sender = Auth.auth().currentUser?.uid ?? "(unknown)"
         let body = willSendMessage(messageTextfield.text ?? "(blank message)")
         let time = FieldValue.serverTimestamp()
@@ -685,33 +745,18 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
                 self.toggleComposeView(enable: true)
             }
         }
-        
-//        // Add new message to database
-//        var document: DocumentReference?
-////        guard let messagesDB = messagesDB else { fatalError("❌ Can't get messagesDB.") }
-//        document = messagesDB.addDocument(data: message) { (error) in
-//            guard let documentID = document?.documentID else {
-//                print("Failed to send message: \(error?.localizedDescription ?? "unknown error")")
-//                let spinner = JGProgressHUD()
-//                spinner.indicatorView = JGProgressHUDErrorIndicatorView()
-//                spinner.show(in: self.view)
-//                spinner.dismiss(afterDelay: 0.5)
-//                // Repopulate text field
-//                self.messageFailedToSend(body)
-//                self.toggleComposeView(enable: true)
-//                return
-//            }
-//            print("Saved message using ID \(documentID) (probably to server).")
-//        }
     }
     
     /// Add new message to database
     func sendMessage(_ message: [String: Any], adding participants: [String]? = nil, completion: @escaping (Result<DocumentReference, Error>) -> Void) {
-//        var document: DocumentReference?
-//        guard let messagesDB = messagesDB else { fatalError("❌ Can't get messagesDB.") }
         if let participants = participants,
             !participants.isEmpty {
+            
+            let spinner = JGProgressHUD()
+            spinner.show(in: view)
+            
             addParticipants(participants) { result in
+                spinner.dismiss()
                 switch result {
                 case .success(let confirmation):
                     print(confirmation)
@@ -827,6 +872,12 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         timer.tolerance = interval * 0.1
         // Go
         RunLoop.current.add(timer, forMode: .default)
+        
+//        // If we haven't come online yet, don't worry about timestamps, just restart message fetch process
+//        guard !offline else {
+//            getRecentMessages()
+//            return
+//        }
 
         // Updating all timestamp labels
         let rowCount = messageTableView.numberOfRows(inSection: 0)
@@ -958,7 +1009,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
 
     //////////////////////////////////////////////////////
     
-    // MARK: - Segue-related
+    // MARK: - Deinit
     
 //    @IBAction func logOutPressed(_ sender: AnyObject) {
 //        users.removeListener()
@@ -995,14 +1046,31 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
 //        }
 //    }
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+//        print("🐛🐛🐛 prepare for segue")
+//    }
+    
+//    deinit {
+//        Foreground
+//    }
+    
+    func stopReceivingNotifications() {
+        NotificationHandler.current.stopSendingNotifications(to: self)
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        print("🐛🐛🐛 viewDidDisappear")
+        super.viewDidDisappear(animated)
         // Stop receiving new messages
         removeListeners()
         // And stop looking for app version if we haven't found it
         Version.current.stopListening(from: self)
+        // Also kill the timer
+        timer.invalidate()
+        // And foreground notifications
+        stopReceivingNotifications()
     }
-
-
+    
 
 //    func __getTableSize() {
 //        let table = messageTableView!
@@ -1108,6 +1176,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
 
 }
 
+// MARK: - Extensions -
 
 extension ChatViewController: VersionDelegate {
     
@@ -1128,6 +1197,10 @@ extension ChatViewController: VersionDelegate {
             
             // Delete any pending messages
             deletePendingMessages()
+        } else if cacheIsEmpty {
+            // Restart message fetching process, to avoid retrieving the entire backlog
+            // Note that this is flawed logic; if we went offline after doing a version check, the view will never update
+            getRecentMessages()
         }
     }
     

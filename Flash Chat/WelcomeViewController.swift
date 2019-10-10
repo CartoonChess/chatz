@@ -14,8 +14,9 @@ class WelcomeViewController: UIViewController {
         super.viewDidLoad()
         
         // If we're logged in, automatically:
-        if let user = Auth.auth().currentUser {
-            user.joinGroupChat()
+        if Auth.auth().currentUser != nil {
+//        if let user = Auth.auth().currentUser {
+//            user.joinGroupChat()
             //- Get existing permissions for notifications
             Permissions.ask(for: .notification)
             //- Then move to the chat

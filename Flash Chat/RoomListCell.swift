@@ -26,10 +26,6 @@ class RoomListCell: UITableViewCell {
     
     // MARK: - Methods
     
-//    override func awakeFromNib(_ foo: String) {
-//        super.awakeFromNib()
-//    }
-    
     private func construct() {
         guard let room = preview else {
             print("❌ Room list cell does not have a room preview object.")

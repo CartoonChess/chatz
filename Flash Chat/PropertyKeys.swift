@@ -20,6 +20,12 @@ struct DirectoryKeys {
 //    static let userImagesUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: AppKeys.appGroup)?.appendingPathComponent("Documents/Icons", isDirectory: true)
 }
 
+
+///// Individual preference plists
+//struct DefaultsKeys {
+//    static let badges = "
+//}
+
 /// Contains unchanging key names for all in-app settings.
 struct SettingsKeys {
     static let badges = "NotificationBadges"

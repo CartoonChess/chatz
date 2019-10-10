@@ -21,5 +21,5 @@ struct RoomPreview {
     let icon: UIImage
     let color: UIColor
     
-    let unreadCount: Int?
+    var unreadCount: Int?
 }

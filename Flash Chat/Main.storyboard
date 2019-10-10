@@ -108,10 +108,10 @@
                                     <rect key="frame" x="16" y="5.5" width="33" height="33"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="🔠" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wes-dw-Ynw">
-                                            <rect key="frame" x="10" y="0.0" width="23" height="33"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="a" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wes-dw-Ynw">
+                                            <rect key="frame" x="24" y="0.0" width="9" height="33"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <nil key="textColor"/>
+                                            <color key="textColor" systemColor="systemOrangeColor" red="1" green="0.58431372549019611" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
@@ -123,12 +123,12 @@
                                 </view>
                             </barButtonItem>
                             <barButtonItem id="QJS-Vz-kiX">
-                                <switch key="customView" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" id="yoy-tz-cL7">
+                                <switch key="customView" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" id="yoy-tz-cL7" customClass="AppearanceSwitch" customModule="chatz" customModuleProvider="target">
                                     <rect key="frame" x="57" y="6.5" width="51" height="31"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                    <color key="onTintColor" systemColor="systemOrangeColor" red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="onTintColor" systemColor="systemOrangeColor" red="1" green="0.58431372549019611" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <connections>
-                                        <action selector="toggleRoomSort:" destination="TfX-1w-ewL" eventType="primaryActionTriggered" id="GI4-ia-Pd0"/>
+                                        <action selector="toggleRoomSort:" destination="TfX-1w-ewL" eventType="valueChanged" id="6qj-eN-bsj"/>
                                     </connections>
                                 </switch>
                             </barButtonItem>
@@ -137,10 +137,10 @@
                                     <rect key="frame" x="116" y="5.5" width="33" height="33"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="🆕" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Je9-np-2pK">
-                                            <rect key="frame" x="0.0" y="0.0" width="23" height="33"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="❶" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Je9-np-2pK">
+                                            <rect key="frame" x="0.0" y="0.0" width="15.5" height="33"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <nil key="textColor"/>
+                                            <color key="textColor" systemColor="systemOrangeColor" red="1" green="0.58431372549019611" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
@@ -164,7 +164,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <outlet property="roomSortSwitch" destination="yoy-tz-cL7" id="haa-Le-fpt"/>
+                        <outlet property="roomSortSwitch" destination="yoy-tz-cL7" id="JDx-Cy-h5v"/>
                         <segue destination="ZUa-A7-ylH" kind="unwind" identifier="logOutUnwindSegue" unwindAction="unwindToWelcome:" id="ToP-Wm-kly"/>
                     </connections>
                 </tableViewController>
@@ -388,7 +388,7 @@
                                 </subviews>
                             </stackView>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemOrangeColor" red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" systemColor="systemOrangeColor" red="1" green="0.58431372549019611" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="cGa-gv-Ksh" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leading" id="6Rj-cE-EAr"/>
                             <constraint firstAttribute="trailing" secondItem="cGa-gv-Ksh" secondAttribute="trailing" id="LXh-5d-45u"/>

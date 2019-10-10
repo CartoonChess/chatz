@@ -541,7 +541,9 @@ extension User {
                 print("❌ Group chat participants collection unavailable: \(error?.localizedDescription ?? "(unknown error)")")
                 return
             }
-            if snapshot.count == 0 {
+            
+            if snapshot.documents.count == 0 {
+//            if snapshot.count == 0 {
                 // We're not here yet, so add ourselves
                 print("ℹ️ Adding ourselves to the group chat.")
                 participantsDB.addDocument(data: ["uid": uid]) { error in

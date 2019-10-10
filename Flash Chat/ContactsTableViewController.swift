@@ -10,7 +10,7 @@ import UIKit
 import Firebase
 import JGProgressHUD
 
-class ContactsTableViewController: UITableViewController {
+class ContactsTableViewController: UITableViewController, NotificationHandlerDelegate, ChatViewControllerDelegate {
     
     // MARK: - Properties -
     
@@ -37,6 +37,11 @@ class ContactsTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        NotificationHandler.current.delegate = self
+        
+        // UIImage(51)+top(8)+bot(8); keeps errors out of logs
+        tableView.estimatedRowHeight = 71.0
         // Register MessageCell.xib file
         tableView.register(UINib(nibName: "RoomListCell", bundle: nil), forCellReuseIdentifier: "RoomListCell")
         
@@ -56,6 +61,14 @@ class ContactsTableViewController: UITableViewController {
         
         // Get rooms
         updateRooms()
+        
+        // Watch for app returning from background
+        NotificationCenter.default.addObserver(self, selector:#selector(didBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+    }
+    
+    /// This will be triggered by AppDelegate
+    @objc func didBecomeActive() {
+        updateBadgeCounts()
     }
     
     func updateViewTitle() {
@@ -131,8 +144,7 @@ class ContactsTableViewController: UITableViewController {
                         }
                         
                         // Start at the latest message, if there is one
-                        // TODO: This won't work if we've got a lot of new messages?
-                        var previewQuery = roomDocument.collection("messages").order(by: "time").limit(to: 10)
+                        var previewQuery = roomDocument.collection("messages").order(by: "time")
                         if let newestMessage = snapshot.documents.first {
                             previewQuery = previewQuery.start(atDocument: newestMessage)
                         }
@@ -160,7 +172,7 @@ class ContactsTableViewController: UITableViewController {
                             // TODO: Set badge count
                             let icon = UIImage(named: "egg")!
                             let color = otherUserColor ?? UIColor.systemOrange
-                            let badge = 0
+                            let badge = self.getBadgeCount(for: roomId)
                             let room = RoomPreview(id: roomId,
                                                    otherUserID: otherUserID,
                                                    name: roomName,
@@ -170,9 +182,10 @@ class ContactsTableViewController: UITableViewController {
                                                    color: color,
                                                    unreadCount: badge)
                             
+                            let index = self.rooms.firstIndex(where: { $0.id == roomId })
                             
                             // See if we're updating a chat row or adding a new one
-                            if let index = self.rooms.firstIndex(where: { $0.id == roomId }) {
+                            if let index = index {
                                 // Chat already exists; update row
                                 self.rooms[index] = room
                                 self.tableView.reloadRows(at: [[0, index]], with: .automatic)
@@ -180,7 +193,8 @@ class ContactsTableViewController: UITableViewController {
                                 // A new chat has appeared, or we're doing init load
                                 self.rooms.append(room)
                                 // Add to table
-                                let row: [IndexPath] = [[0, self.rooms.count - 1]]
+                                let index = self.rooms.count - 1
+                                let row: [IndexPath] = [[0, index]]
                                 self.tableView.insertRows(at: row, with: .automatic)
                             }
                             
@@ -188,12 +202,21 @@ class ContactsTableViewController: UITableViewController {
                             case .added, .modified:
                                 break
                             case .removed:
-                                // TODO: Deleted chats
+                                // Chat was deleted from server
+                                guard let index = index else {
+                                    print("❌ Couldn't find deleted room; perhaps we never downloaded it?")
+                                    return
+                                }
+                                // Note: This actually creates Empty Room + empty user cell
+                                print("🗑 Removing deleted room from list.")
+                                self.rooms.remove(at: index)
+                                self.tableView.deleteRows(at: [[0, index]], with: .automatic)
                                 return
                             @unknown default:
                                 fatalError("🛑 Room's message document changed in an unexpected way!")
                             }
                             
+//                            self.updateBadgeCounts()
                             self.updateUserCells()
                             self.sortRooms()
                         }
@@ -290,10 +313,128 @@ class ContactsTableViewController: UITableViewController {
     */
     
     
+    // MARK: - Badge counts
+    
+    // Update any badges that have changed
+    func updateBadgeCounts() {
+        // Get badges from defaults
+        let allBadges = UserDefaults(suiteName: AppKeys.appGroup)?.dictionary(forKey: SettingsKeys.badges) as? [String: Int] ?? [:]
+        
+        // Update count for individual rooms
+        var updatedRows: [Int] = []
+        for (roomID, badges) in allBadges {
+            guard let index = rooms.firstIndex(where: { $0.id == roomID }) else {
+                print("❌ Found an updated badge count, but no matching room.")
+                continue
+            }
+            // Only update if there's actually been a change
+            if rooms[index].unreadCount != badges {
+                rooms[index].unreadCount = badges
+                updatedRows.append(index)
+            }
+        }
+        
+        // If we have any changes, update the view
+        if updatedRows.count > 0 {
+            let indexPaths: [IndexPath] = updatedRows.map { [0, $0] }
+            tableView.reloadRows(at: indexPaths, with: .automatic)
+            
+            // Sort rooms, so those with new messages can appear at the top
+            if roomSortSwitch.isOn {
+                sortRooms()
+            }
+        }
+    }
+    
+    // Returns the current badge count if there is one, otherwise nil
+    func getBadgeCount(for roomID: String) -> Int? {
+        // Get badges from defaults
+        let allBadges = UserDefaults(suiteName: AppKeys.appGroup)?.dictionary(forKey: SettingsKeys.badges) as? [String: Int] ?? [:]
+        
+        return allBadges[roomID]
+    }
+    
+    // ChatVC delegate func
+    func didReadMessages(in roomID: String) {
+        guard let index = rooms.firstIndex(where: { $0.id == roomID }) else {
+            print("❌ Can't remove badge count from room: Room not in rooms list.")
+            return
+        }
+        didReadMessages(in: roomID, at: index)
+    }
+    
+    func didReadMessages(in roomID: String, at index: Int) {
+        // Remove any other notifs from the same room (tapped notif removed automatically)
+        UNUserNotificationCenter.current().removeNotifications(withThreadIdentifier: roomID)
+        // Remove badges from app icon and from rows
+        removeUnreadBadges(for: roomID, at: index)
+        updateUnreadCountInBackButton()
+    }
+    
+    func removeUnreadBadges(for roomID: String, at index: Int) {
+        // Remove unread messages count in plist and on app icon
+        Badges.remove(for: roomID) { totalUnread in
+            Badges.appIcon = totalUnread
+        }
+        // Remove from object and cell
+        rooms[index].unreadCount = nil
+        tableView.reloadRows(at: [[0, index]], with: .automatic)
+        // Send read room down the list
+        if roomSortSwitch.isOn {
+            sortRooms()
+        }
+    }
+    
+    // Foreground notifications delegate func
+    func willPresentNotification(_ notification: UNNotification, options: (UNNotificationPresentationOptions) -> Void) {
+        // Don't show the notification banner while in this view
+        options([.badge, .sound])
+        updateBadgeCounts()
+        updateUnreadCountInBackButton()
+    }
+        
+    func updateUnreadCountInBackButton() {
+        let title = Badges.totalUnread
+        if title > 0 {
+            // New button must be made every time; title by itself will not change
+            let backButton = UIBarButtonItem(title: String(title), style: .plain, target: self, action: nil)
+            navigationItem.backBarButtonItem = backButton
+        } else {
+            // If there are no new messages, use the default button
+            navigationItem.backBarButtonItem = nil
+        }
+    }
+    
+    // Notification handler delegate function
+    func didReceiveTapOnNotification(for roomID: String) {
+        print("✴️ didReceiveTapOnNotification")
+        
+        // FIXME: Why isn't the app badge clearing on room view anymore?
+        
+        if let navigationController = navigationController,
+            let visibleChat = navigationController.viewControllers.last as? ChatViewController {
+            if visibleChat.roomID != roomID {
+                // User already had a chat open when entering background
+                // User was in a different room, so we need to pop that one off first
+                popLastView(from: navigationController)
+                performSegue(withIdentifier: "RoomSegue", sender: roomID)
+            }
+        } else {
+            // User was at contacts list before entering bg, so perform usual chat segue
+            performSegue(withIdentifier: "RoomSegue", sender: roomID)
+        }
+    }
+    
+    // Convenience function; we don't need to use the value this returns
+    @discardableResult func popLastView(from navigationController: UINavigationController) -> UIViewController? {
+        return navigationController.viewControllers.popLast()
+    }
+    
+    
     // MARK: - Room sorting
     
     /// Switch between sorting alphabetically and sorting with unread messages at the top
-    @IBAction func toggleRoomSort(_ sender: UISwitch) {
+    @IBAction func toggleRoomSort(_ sender: Any) {
         sortRooms()
     }
     
@@ -348,30 +489,55 @@ class ContactsTableViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         print("🔜 Preparing to segue.")
         
-        guard let destination = segue.destination as? ChatViewController,
-            let cell = tableView.indexPathForSelectedRow else {
-            print("❌ Trying to segue to the wrong controller or without a selected row!")
-            return
-        }
-        
-        // TODO: Logout segue
-        // Stop looking for app version if we haven't found it
-        Version.current.stopListening(from: self)
-        
-        // Get room info
-        let room = rooms[cell.row]
-        
-        // Pass info to room view
-        destination.users = users
-        destination.roomName = room.name
-        
-        if room.id != room.otherUserID {
-            // This chat already exists
-            destination.roomID = room.id
+        if let destination = segue.destination as? ChatViewController {
+            print("🐛 destination = ChatView")
+            let room: RoomPreview
+            let index: Int
+            
+            if let roomID = sender as? String,
+                let roomIndex = rooms.firstIndex(where: { $0.id == roomID }) {
+                print("🐛 sender = string")
+                // RoomID was sent to us by tapping a notification
+                index = roomIndex
+                room = rooms[index]
+            } else if let row = tableView.indexPathForSelectedRow?.row {
+                print("🐛 selectedRow")
+                // Room was selected by tapping a table row
+                index = row
+                room = rooms[index]
+            } else {
+                print("❌ Attempted to segue to chat view without providing a room ID (or empty user).")
+                return
+            }
+            
+            // To receive message read update
+            destination.delegate = self
+            
+            // Pass info to room view
+            destination.users = users
+            destination.roomName = room.name
+            
+            if room.id != room.otherUserID {
+                // This chat already exists
+                destination.roomID = room.id
+                
+                // Remove badges if there are unread messages in this room
+                // Also update the back button regardless
+                if room.unreadCount != nil {
+                    print("🐛 segue room.unreadCount: \(room.unreadCount)")
+                    didReadMessages(in: room.id, at: index)
+                } else {
+                    updateUnreadCountInBackButton()
+                }
+            } else {
+                // This is a new chat, without a document ID
+                destination.roomID = Firestore.firestore().collection("rooms").document().documentID
+                destination.otherUserID = room.otherUserID
+            }
+        } else if segue.destination is WelcomeViewController {
+            print("⬅️ Segueing to welcome view.")
         } else {
-            // This is a new chat, without a document ID
-            destination.roomID = Firestore.firestore().collection("rooms").document().documentID
-            destination.otherUserID = room.otherUserID
+            print("❌ Trying to segue to the wrong view controller!")
         }
     }
     
@@ -387,6 +553,8 @@ class ContactsTableViewController: UITableViewController {
         removeListeners()
         // Kill user listener
         users.removeListener()
+        // Kill foreground notifications
+        stopReceivingNotifications()
         
         let spinner = JGProgressHUD()
         spinner.show(in: view)
@@ -409,6 +577,7 @@ class ContactsTableViewController: UITableViewController {
                     try authorizer.signOut()
                     print("Signed out user \(user.displayName ?? "(name unknown)").")
                     
+                    self.clearAllUnread()
                     spinner.dismiss()
                     self.performSegue(withIdentifier: "logOutUnwindSegue", sender: self)
                 } catch {
@@ -420,14 +589,30 @@ class ContactsTableViewController: UITableViewController {
         }
     }
     
+    func clearAllUnread() {
+        // Empty out the plist
+        Badges.removeAll()
+        // Clear app badge
+        UIApplication.shared.applicationIconBadgeNumber = 0
+        // Remove notif center notifs
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+    }
+    
     func removeListeners() {
         roomsListener?.remove()
         participantsListeners.forEach { $0.1.remove() }
         previewListeners.forEach { $0.1.remove() }
     }
+    
+    func stopReceivingNotifications() {
+        NotificationHandler.current.stopSendingNotifications(to: self)
+    }
 
 }
 
+
+// MARK: - Extensions -
 
 extension ContactsTableViewController: VersionDelegate {
     func appVersionWasChecked(meetsMinimum: Bool) {
