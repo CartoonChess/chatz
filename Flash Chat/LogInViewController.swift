@@ -36,8 +36,8 @@ class LogInViewController: UIViewController {
             result.user.joinGroupChat()
             
             // Update notifications token if this device is already registered
-            Permissions.didAsk(for: .notification) { (didAsk) in
-                if didAsk {
+            Permissions.didReceivePermission(for: .notification) { didReceive in
+                if didReceive {
                     guard let user = authorizer.currentUser else {
                         print("❌ Couldn't update token on login because current user couldn't be found.")
                         return

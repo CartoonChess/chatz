@@ -22,6 +22,12 @@ class WelcomeViewController: UIViewController {
             //- Then move to the chat
 //            performSegue(withIdentifier: "goToChat", sender: nil)
             performSegue(withIdentifier: "ContactsListSegue", sender: nil)
+        } else {
+            // TODO: This should be asked in a more proper place
+            /*
+             We need to revise how we ask for permissions… we should be doing it at login/register success as well. Ideally it will happen before the contacts list is shown. Need to figure out if we should even be using didRequestPermission, instead using ask() always?
+             */
+            Permissions.ask(for: .notification)
         }
     }
 

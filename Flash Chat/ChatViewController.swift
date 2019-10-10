@@ -113,13 +113,13 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tableViewTapped))
         messageTableView.addGestureRecognizer(tapGesture)
         
-        // Ask to allow notifications
-        // This will only trigger for newly registered users; we get permission for existing users on the first screen
-        Permissions.didAsk(for: .notification) { (didAsk) in
-            if !didAsk {
-                Permissions.ask(for: .notification)
-            }
-        }
+//        // Ask to allow notifications
+//        // This will only trigger for newly registered users; we get permission for existing users on the first screen
+//        Permissions.didReceivePermission(for: .notification) { didReceive in
+//            if didReceive {
+//                Permissions.ask(for: .notification)
+//            }
+//        }
         
         // Update title with chat/user name
         navigationItem.title = roomName

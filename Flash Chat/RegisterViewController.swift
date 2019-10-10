@@ -33,7 +33,7 @@ class RegisterViewController: UIViewController {
         spinner.show(in: self.view)
         
         // Register user
-        createUser(named: name, email: email, password: password) { (error) in
+        createUser(named: name, email: email, password: password) { error in
             if let error = error {
                 print(error)
                 spinner.indicatorView = JGProgressHUDErrorIndicatorView()
@@ -42,8 +42,8 @@ class RegisterViewController: UIViewController {
                 //- Alert and move to login, which will try updating name/document again
             } else {
                 // Update notifications token if this device is already registered
-                Permissions.didAsk(for: .notification) { (didAsk) in
-                    if didAsk {
+                Permissions.didReceivePermission(for: .notification) { didReceive in
+                    if didReceive {
                         guard let user = Auth.auth().currentUser else {
                             print("❌ Couldn't update token on login because current user couldn't be found.")
                             return
@@ -63,7 +63,7 @@ class RegisterViewController: UIViewController {
     
     func createUser(named name: String, email: String, password: String, completion: @escaping (String?) -> Void) {
         let authorizer = Auth.auth()
-        authorizer.createUser(withEmail: email, password: password) { (result, error) in
+        authorizer.createUser(withEmail: email, password: password) { result, error in
             guard let result = result else {
                 completion("❌ Error registering user: \(error?.localizedDescription ?? "unknown")")
                 return

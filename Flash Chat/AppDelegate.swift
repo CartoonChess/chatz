@@ -151,43 +151,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 // MARK: - Extensions
 
-//@available(iOS 10, *)
-//extension AppDelegate: UNUserNotificationCenterDelegate {
-//    // Do something with push notifications when app is already in the foreground
-//    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-//        print("✴️ userNotificationCenter:willPresent")
-//        let userInfo = notification.request.content.userInfo
-//        // With swizzling disabled you must let Messaging know about the message, for Analytics
-//        Messaging.messaging().appDidReceiveMessage(userInfo)
-//        // Print message ID
-//        if let messageID = userInfo[gcmMessageIDKey] {
-//            print("willPresent Message ID: \(messageID)")
-//        }
-//        // Print full message
-//        print(userInfo)
-//
-//        // TODO: Present foreground notifications
-//        completionHandler([])
-//    }
-//
-//    // Triggers when the user taps a notification
-//    // Handles response options such as dismiss, open, etc.?
-//    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-//        print("✴️ userNotificationCenter:didReceive")
-//        let userInfo = response.notification.request.content.userInfo
-//
-//        // Print message ID
-//        if let messageID = userInfo[gcmMessageIDKey] {
-//            print("didReceive_response Message ID: \(messageID)")
-//        }
-//        // Print full message
-//        print(userInfo)
-//
-//        // TODO: Handle notification responses
-//        completionHandler()
-//    }
-//}
-
 extension AppDelegate: MessagingDelegate {
     // message(_:didReceiveRegistrationToken:) is called whenever Firebase receives a new token
     // This must be implemented, otherwise AppDelegate doesn't know to receive the Firebase notifications token

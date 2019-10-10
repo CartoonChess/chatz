@@ -26,6 +26,9 @@ class ContactsTableViewController: UITableViewController, NotificationHandlerDel
     // Listeners for individual previews
     var previewListeners: [DocumentReference: ListenerRegistration] = [:]
     
+    // If we don't have permission to receive notifications, we'll set badges more simply
+    var canReceiveNotifications = true
+    
     // MARK: - IBOutlets
     
     @IBOutlet weak var roomSortSwitch: UISwitch!
@@ -37,6 +40,9 @@ class ContactsTableViewController: UITableViewController, NotificationHandlerDel
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Check if we can receive notifications
+        Permissions.didReceivePermission(for: .notification) { self.canReceiveNotifications = $0 }
         
         NotificationHandler.current.delegate = self
         
@@ -168,11 +174,27 @@ class ContactsTableViewController: UITableViewController, NotificationHandlerDel
                                 }
                             }
                             
+                            let index = self.rooms.firstIndex(where: { $0.id == roomId })
+                            
+                            var badge: Int? = nil
+                            
+                            // Get badges from plist if we can get notifications
+                            if self.canReceiveNotifications {
+                                badge = self.getBadgeCount(for: roomId)
+                            } else if let index = index,
+                                let timeOfPreviousMessage = self.rooms[index].latestMessageTime,
+                                let timeOfNewMessage = messageTime,
+                                timeOfPreviousMessage < timeOfNewMessage {
+                                // If not, check for unread messages based on time
+                                // This should avoid being set when first downloading cache since we only grab the latest
+                                // Also, the cache is slow enough on relaunch that it should notice new msgs
+                                badge = 1
+                            }
+                                
                             // Create room preview
-                            // TODO: Set badge count
                             let icon = UIImage(named: "egg")!
                             let color = otherUserColor ?? UIColor.systemOrange
-                            let badge = self.getBadgeCount(for: roomId)
+//                            let badge = self.getBadgeCount(for: roomId)
                             let room = RoomPreview(id: roomId,
                                                    otherUserID: otherUserID,
                                                    name: roomName,
@@ -182,7 +204,7 @@ class ContactsTableViewController: UITableViewController, NotificationHandlerDel
                                                    color: color,
                                                    unreadCount: badge)
                             
-                            let index = self.rooms.firstIndex(where: { $0.id == roomId })
+//                            let index = self.rooms.firstIndex(where: { $0.id == roomId })
                             
                             // See if we're updating a chat row or adding a new one
                             if let index = index {
@@ -354,6 +376,12 @@ class ContactsTableViewController: UITableViewController, NotificationHandlerDel
         return allBadges[roomID]
     }
     
+//    /// Get the message time of the latest message, for use when we can't receive actual badge counts
+//    func getTimeOfLatestMessage(in roomID: String) -> Date {
+//        let foo = rooms[roomID]
+//
+//    }
+    
     // ChatVC delegate func
     func didReadMessages(in roomID: String) {
         guard let index = rooms.firstIndex(where: { $0.id == roomID }) else {
@@ -524,7 +552,6 @@ class ContactsTableViewController: UITableViewController, NotificationHandlerDel
                 // Remove badges if there are unread messages in this room
                 // Also update the back button regardless
                 if room.unreadCount != nil {
-                    print("🐛 segue room.unreadCount: \(room.unreadCount)")
                     didReadMessages(in: room.id, at: index)
                 } else {
                     updateUnreadCountInBackButton()

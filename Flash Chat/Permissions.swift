@@ -26,7 +26,7 @@ struct Permissions {
     static func ask(for type: PermissionsType, options: [PermissionsOption] = []) {
         switch type {
         case .notification:
-            askForNotifications(options) { (result) in
+            askForNotifications(options) { result in
                 switch result {
                 case .success(let wasGranted):
                     if wasGranted {
@@ -58,16 +58,7 @@ struct Permissions {
 //                }
 //            }
             let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
-            UNUserNotificationCenter.current().requestAuthorization(options: authOptions) { (wasGranted, error) in
-//                if let error = error {
-//                    print("❌ Error getting notification authorization: \(error.localizedDescription)")
-//                    return
-//                } else if wasGranted {
-//                    print("🔴 Notification authorization granted!")
-//                } else {
-//                    print("🛑 Notification authorization denied, or possibly not yet decided.")
-//                }
-//
+            UNUserNotificationCenter.current().requestAuthorization(options: authOptions) { wasGranted, error in
                 if let error = error {
                     completion(.failure(error))
                 } else {
@@ -91,30 +82,19 @@ struct Permissions {
             }
             
         }
-        
-//        // Now that we have permission, register for notifications
-//        DispatchQueue.main.async {
-//            UIApplication.shared.registerForRemoteNotifications()
-//        }
     }
     
     
     // MARK: - Check
     
-    static func didAsk(for type: PermissionsType, completion: @escaping (Bool) -> Void) {
-//        var didAsk = false
-        
+    static func didReceivePermission(for type: PermissionsType, completion: @escaping (Bool) -> Void) {
         switch type {
         case .notification:
-//            didAskForNotifications { didAsk = $0 }
-            didAskForNotifications { completion($0) }
+            didReceivePermissionForNotifications { completion($0) }
         }
-        
-//        print("ℹ️ didAsk for \(type): \(didAsk)")
-//        return didAsk
     }
     
-    private static func didAskForNotifications(completion: @escaping (Bool) -> Void) {
+    private static func didReceivePermissionForNotifications(completion: @escaping (Bool) -> Void) {
         let notificationCenter = UNUserNotificationCenter.current()
         notificationCenter.getNotificationSettings { (settings) in
             let authorizationStatus = settings.authorizationStatus
@@ -125,21 +105,6 @@ struct Permissions {
             }
         }
     }
-    
-////    static func getFirebaseMessagingToken() -> Result<String, Error> {
-//    static func getFirebaseMessagingToken() -> String {
-//        InstanceID.instanceID().instanceID { (result, error) in
-////            guard let result = result else {
-////                let error = error ?? NSError(domain: "", code: 0, userInfo: nil)
-//////                return .failure(error)
-////                return "string"
-////            }
-//////            return .success(result.token)
-////            return "string"
-//            return "string"
-//        }
-////        return "string"
-//    }
     
     static func getFirebaseMessagingToken(completion: @escaping (Result<String, Error>) -> Void) {
         InstanceID.instanceID().instanceID { (result, error) in
